@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Personal Pomodoro Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="container">
+        <h1>🍅 Pomodoro Studio</h1>
+        
+        <!-- Timer Section -->
+        <div class="timer-section">
+            <div class="session-info" id="session-type">Work Session</div>
+            <div id="timer">25:00</div>
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            
+            <div class="controls">
+                <button id="start-btn" class="primary-btn">Start Focus Time</button>
+                <button id="pause-btn" class="secondary-btn" style="display: none;">Pause</button>
+                <button id="reset-btn" class="secondary-btn">Reset</button>
+                <button id="skip-btn" class="secondary-btn">Skip Session</button>
+            </div>
+        </div>
+        
+        <!-- Stats Dashboard -->
+        <div class="stats">
+            <div class="stat-card">
+                <span class="stat-number" id="completed-pomodoros">0</span>
+                <span>Completed Pomodoros</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="total-focus-time">0</span>
+                <span>Minutes Focused</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="completed-tasks">0</span>
+                <span>Tasks Completed</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="current-streak">0</span>
+                <span>Current Streak</span>
+            </div>
+        </div>
+        
+        <!-- Settings -->
+        <div class="section">
+            <h2>⚙️ Timer Settings</h2>
+            <div class="settings">
+                <div class="setting-group">
+                    <label>Work:</label>
+                    <input type="number" id="work-duration" value="25" min="1" max="60">
+                    <span>min</span>
+                </div>
+                <div class="setting-group">
+                    <label>Short Break:</label>
+                    <input type="number" id="short-break" value="5" min="1" max="30">
+                    <span>min</span>
+                </div>
+                <div class="setting-group">
+                    <label>Long Break:</label>
+                    <input type="number" id="long-break" value="15" min="1" max="60">
+                    <span>min</span>
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="auto-start-breaks" checked>
+                        Auto-start breaks
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="sound-notifications" checked>
+                        Sound notifications
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Task List -->
+        <div class="section">
+            <h2>✅ Today's Mission</h2>
+            <div class="task-input-container">
+                <input type="text" id="task-input" placeholder="What's your next goal?">
+                <button id="add-task" class="primary-btn">Add Task</button>
+            </div>
+            <ul id="task-list"></ul>
+        </div>
+        
+        <!-- Music Section -->
+        <div class="section">
+            <h2>🎵 Focus Soundtracks</h2>
+            <div class="music-section">
+                <a href="https://open.spotify.com/playlist/37i9dQZF1DX8NTLI2TtZa6" target="_blank" class="music-link">
+                    🧠 Deep Focus
+                </a>
+                <a href="https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ" target="_blank" class="music-link">
+                    🌧️ Chill Lofi
+                </a>
+                <a href="https://open.spotify.com/playlist/37i9dQZF1DX0XUsuxWHRQd" target="_blank" class="music-link">
+                    🎹 Piano Focus
+                </a>
+                <a href="https://www.youtube.com/watch?v=jfKfPfyJRdk" target="_blank" class="music-link">
+                    🌊 Nature Sounds
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Toast -->
+    <div id="notification" class="notification"></div>
+    
+    <script src="script.js"></script>
+    <link rel="manifest" href="manifest.json">
+</body>
+</html>
