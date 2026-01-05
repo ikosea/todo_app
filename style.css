@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Crimson+Text:wght@400;600&display=swap');
 
 :root {
-  /* Cafe Color Palette */
-  --cream: #F7F3E9;
-  --warm-beige: #E8DCC0;
-  --coffee-brown: #8B6F47;
-  --dark-roast: #3D2914;
-  --espresso: #2C1810;
-  --milk-foam: #FDFBF7;
-  --cinnamon: #C4915C;
-  --latte: #D4C4A8;
+  /* New Figma Palette (user provided) */
+  --cream: #FAE6F1;    /* soft pink background */
+  --warm-beige: #F7EAF7; /* light tint for panels */
+  --coffee-brown: #373EB3; /* deep indigo (primary) */
+  --dark-roast: #2F358F; /* slightly darker indigo */
+  --espresso: #1F225F; /* text / headings */
+  --milk-foam: #FFFFFF; /* white */
+  --cinnamon: #9FBA7D; /* green accent */
+  --latte: #F4E9F8; /* pale pink tint */
   
   /* Spacing */
   --space-xs: 0.5rem;
@@ -86,7 +86,7 @@ h2 {
   text-align: center;
   margin-bottom: var(--space-xl);
   padding: var(--space-l);
-  background: linear-gradient(135deg, var(--warm-beige), var(--latte));
+  background: linear-gradient(135deg, var(--cream), var(--latte));
   border-radius: 20px;
   box-shadow: var(--shadow-soft);
 }
@@ -203,6 +203,7 @@ button {
   color: var(--coffee-brown);
   margin-bottom: var(--space-xs);
 }
+
 
 .stat-card span:last-child {
   font-size: 0.85rem;
@@ -412,6 +413,29 @@ input[type="checkbox"]:checked::after {
   font-weight: 500;
   max-width: 300px;
   border: 1px solid var(--cinnamon);
+}
+
+/* Fullscreen styling for timer-section */
+.timer-section:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  padding: 3rem;
+  background: linear-gradient(135deg, var(--cream), var(--latte));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: none;
+}
+
+.timer-section:fullscreen #timer {
+  font-size: clamp(4rem, 10vw, 7rem);
+}
+
+.timer-section:fullscreen .controls {
+  position: absolute;
+  bottom: 2rem;
 }
 
 /* Responsive Design */

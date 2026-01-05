@@ -2,6 +2,7 @@
 const timerDisplay = document.getElementById("timer");
 const progressBar = document.getElementById("progress-bar");
 const sessionTypeDisplay = document.getElementById("session-type");
+const timerSection = document.querySelector('.timer-section');
 
 const startBtn = document.getElementById("start-btn");
 const pauseBtn = document.getElementById("pause-btn");
@@ -23,7 +24,11 @@ const taskInput = document.getElementById("task-input");
 const addTaskBtn = document.getElementById("add-task");
 const taskList = document.getElementById("task-list");
 
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+
 const notification = document.getElementById("notification");
+
+// (progress tiles removed)
 
 // === Timer Variables ===
 let timerSeconds = workInput.value * 60;
@@ -65,7 +70,12 @@ function updateTimerDisplay() {
 // === Update Progress Bar ===
 function updateProgress() {
     let totalDuration = getSessionDuration(currentSession) * 60;
+    if (!totalDuration || totalDuration <= 0) {
+        progressBar.style.width = `0%`;
+        return;
+    }
     let percent = ((totalDuration - timerSeconds) / totalDuration) * 100;
+    percent = Math.max(0, Math.min(100, percent));
     progressBar.style.width = `${percent}%`;
 }
 
@@ -216,6 +226,25 @@ pauseBtn.addEventListener("click", pauseTimer);
 resetBtn.addEventListener("click", resetTimer);
 skipBtn.addEventListener("click", skipSession);
 addTaskBtn.addEventListener("click", addTask);
+
+// Fullscreen toggle for the pomodoro timer
+if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            timerSection.requestFullscreen().catch(err => console.error('Fullscreen error:', err));
+        } else {
+            document.exitFullscreen();
+        }
+    });
+
+    // Optional: when exiting fullscreen, ensure controls are visible
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            startBtn.style.display = isRunning ? 'none' : 'inline-block';
+            pauseBtn.style.display = isRunning ? 'inline-block' : 'none';
+        }
+    });
+}
 
 // === Init ===
 updateTimerDisplay();
