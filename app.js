@@ -113,27 +113,26 @@ function resetTimer() {
 function skipSession() {
     clearInterval(timerInterval);
     isRunning = false;
+    autoStartNextSession = false;
     handleSessionEnd();
 }
-
 function handleSessionEnd() {
     playNotificationSound();
 
     if (currentSession === "work") {
         pomodoroCount++;
         sessionsCompleted++;
-        completeSelectedTask();
+        incrementTaskPomodoro(); // renamed
         updatePomodoroIndicator();
         currentSession = (sessionsCompleted % 4 === 0) ? "long" : "short";
     } else {
         currentSession = "work";
-        if (sessionsCompleted % 4 === 0) {
-            resetPomodoroIndicator();
-        }
+        if (sessionsCompleted % 4 === 0) resetPomodoroIndicator();
     }
 
     unlockTasks();
     updateSessionLabel();
+
     timerSeconds = getSessionDuration(currentSession) * 60;
     updateTimerDisplay();
     updateProgress();
@@ -141,8 +140,10 @@ function handleSessionEnd() {
 
     startBtn.style.display = "inline-block";
     pauseBtn.style.display = "none";
-    startTimer();
+
+    if (autoStartNextSession) startTimer();
 }
+
 
 // === Helper Functions ===
 function getSessionDuration(type) {
@@ -250,18 +251,16 @@ function renderTasks() {
     });
 }
 
-function completeSelectedTask() {
+function incrementTaskPomodoro() {
     if (!selectedTaskId) return;
     const task = tasks.find(t => t.id === selectedTaskId);
     if (task) {
-        task.completed = true;
-        task.pomodoroCount = (task.pomodoroCount || 0) + 1;
+        task.pomodoroCount++;
         saveTasks();
         renderTasks();
-        selectedTaskId = null;
-        activeTaskText.textContent = "No task selected";
     }
 }
+
 
 function escapeHtml(text) {
     const div = document.createElement("div");
@@ -320,6 +319,13 @@ function toggleTheme() {
     const dark = document.body.classList.toggle("dark-mode");
     localStorage.setItem("theme", dark ? "dark" : "light");
 }
-
+function updateTimerBackground() {
+    timerSection.classList.remove("work-mode", "break-mode");
+    timerSection.classList.add(
+        currentSession === "work" ? "work-mode" : "break-mode"
+    );
+}
 // Initialize app
 document.addEventListener("DOMContentLoaded", init);
+
+
