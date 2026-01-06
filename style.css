@@ -94,6 +94,29 @@ h2 {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
+/* ===== Focus Mode ===== */
+body.focus-mode .task-input-container,
+body.focus-mode #task-list {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+body.focus-mode .active-task-display {
+  border-left: 4px solid var(--primary-color);
+  background: rgba(55, 45, 240, 0.12);
+}
+
+body.focus-mode #timer {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+/* Break mode softening */
+body.break-mode #timer {
+  opacity: 0.8;
+}
+
 
 body.dark-mode .timer-section {
   background: linear-gradient(135deg, rgba(157, 148, 176, 0.1), rgba(176, 168, 200, 0.06));
@@ -562,4 +585,11 @@ input:focus-visible {
   color: var(--secondary-color);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+.focus-hint {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--secondary-color);
+  margin-top: 0.5rem;
 }

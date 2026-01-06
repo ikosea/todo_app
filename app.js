@@ -77,6 +77,7 @@ function startTimer() {
         alert("Please select a task before starting the timer");
         return;
     }
+    updateUIMode();
 
     isRunning = true;
     lockTasks();
@@ -102,6 +103,9 @@ function pauseTimer() {
     unlockTasks();
     startBtn.style.display = "inline-block";
     pauseBtn.style.display = "none";
+    document.body.classList.remove("focus-mode", "break-mode");
+    focusHint.textContent = "";
+
 }
 
 function resetTimer() {
@@ -113,6 +117,9 @@ function resetTimer() {
     updateProgress();
     startBtn.style.display = "inline-block";
     pauseBtn.style.display = "none";
+    document.body.classList.remove("focus-mode", "break-mode");
+    focusHint.textContent = "";
+
 }
 
 function skipSession() {
@@ -144,12 +151,19 @@ function handleSessionEnd() {
     timerSeconds = getSessionDuration(currentSession) * 60;
     updateTimerDisplay();
     updateProgress();
-    setRandomBackground();
+    updateUIMode();
+
 
     startBtn.style.display = "inline-block";
     pauseBtn.style.display = "none";
 
     if (autoStartNextSession) startTimer();
+    if (currentSession === "work") {
+    enableFocusMode();
+    } else {
+    enableBreakMode();
+    }
+
 }
 
 
@@ -378,6 +392,24 @@ function updateStats() {
   todayEl.textContent = todayCount;
   weekEl.textContent = weekCount;
   minutesEl.textContent = minutes;
+}
+function enableFocusMode() {
+  document.body.classList.add("focus-mode");
+  document.body.classList.remove("break-mode");
+}
+
+function enableBreakMode() {
+  document.body.classList.remove("focus-mode");
+  document.body.classList.add("break-mode");
+}
+function updateUIMode() {
+    if (currentSession === "work") {
+        enableFocusMode();
+        focusHint.textContent = "Focus Mode";
+    } else {
+        enableBreakMode();
+        focusHint.textContent = "Break Time";
+    }
 }
 
 // Initialize app
