@@ -52,7 +52,6 @@ function init() {
     loadTheme();
     resetPomodoroIndicator();
     updateStats();
-    setRandomBackground();
 
 }
 
@@ -152,7 +151,7 @@ function handleSessionEnd() {
     if (currentSession === "work") {
     recordSession();
     }
-    setRandomBackground();
+
 
     unlockTasks();
     updateSessionLabel();
@@ -341,37 +340,6 @@ function getUnsplashUrl(type) {
   return `https://source.unsplash.com/1600x900/?${query}&sig=${Date.now()}`;
 }
 
-function setRandomBackground() {
-  const type = currentSession === "work" ? "work" : "break";
-  const cache = backgroundCache[type];
-
-  let imageUrl;
-
-  if (cache.length > 0) {
-    // ✅ Use cached image
-    imageUrl = cache[Math.floor(Math.random() * cache.length)];
-  } else {
-    // 🔄 Fetch new image
-    imageUrl = getUnsplashUrl(type);
-
-    cache.push(imageUrl);
-    if (cache.length > MAX_CACHE) cache.shift();
-  }
-
-  // 🎯 FORCE override CSS gradient
-  timerSection.style.background = `
-    linear-gradient(
-      rgba(0,0,0,${document.body.classList.contains("dark-mode") ? 0.55 : 0.35}),
-      rgba(0,0,0,${document.body.classList.contains("dark-mode") ? 0.55 : 0.35})
-    ),
-    url('${imageUrl}')
-  `;
-
-  timerSection.style.backgroundSize = "cover";
-  timerSection.style.backgroundPosition = "center";
-  timerSection.style.backgroundRepeat = "no-repeat";
-}
-
 
 
 // === Theme ===
@@ -454,6 +422,24 @@ function updateUIMode() {
         enableBreakMode();
         focusHint.textContent = "Break Time";
     }
+}
+function applyBackgroundSafely(imageUrl) {
+  const img = new Image();
+
+  img.onload = () => {
+    timerSection.style.backgroundImage = `
+      linear-gradient(
+        rgba(0,0,0,0.25),
+        rgba(0,0,0,0.25)
+      ),
+      url('${imageUrl}')
+    `;
+    timerSection.style.backgroundSize = "cover";
+    timerSection.style.backgroundPosition = "center";
+  };
+
+  // ❌ No onerror handler → CSS stays untouched if image fails
+  img.src = imageUrl;
 }
 
 // Initialize app
