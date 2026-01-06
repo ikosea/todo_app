@@ -1,3 +1,7 @@
+let sessionHistory = JSON.parse(
+  localStorage.getItem("pomodoroHistory")
+) || [];
+
 // === DOM Elements ===
 const timerDisplay = document.getElementById("timer");
 const sessionTypeDisplay = document.getElementById("session-type");
@@ -41,6 +45,7 @@ function init() {
     updateTimerBackground();
     loadTheme();
     resetPomodoroIndicator();
+    updateStats();
 }
 
 function attachEventListeners() {
@@ -128,6 +133,9 @@ function handleSessionEnd() {
     } else {
         currentSession = "work";
         if (sessionsCompleted % 4 === 0) resetPomodoroIndicator();
+    }
+    if (currentSession === "work") {
+    recordSession();
     }
 
     unlockTasks();
@@ -325,7 +333,55 @@ function updateTimerBackground() {
         currentSession === "work" ? "work-mode" : "break-mode"
     );
 }
+    function recordSession() {
+    const today = new Date().toISOString().slice(0, 10);
+
+    sessionHistory.push({
+        date: today,
+        type: "work",
+        duration: WORK_DURATION
+    });
+
+    localStorage.setItem(
+        "pomodoroHistory",
+        JSON.stringify(sessionHistory)
+    );
+
+    updateStats();
+    }
+
+    
+function updateStats() {
+  const todayEl = document.getElementById("today-count");
+  const weekEl = document.getElementById("week-count");
+  const minutesEl = document.getElementById("focus-minutes");
+
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - today.getDay());
+
+  let todayCount = 0;
+  let weekCount = 0;
+  let minutes = 0;
+
+  sessionHistory.forEach(s => {
+    const sessionDate = new Date(s.date);
+
+    if (s.date === todayStr) todayCount++;
+    if (sessionDate >= weekStart) weekCount++;
+
+    minutes += s.duration;
+  });
+
+  todayEl.textContent = todayCount;
+  weekEl.textContent = weekCount;
+  minutesEl.textContent = minutes;
+}
+
 // Initialize app
 document.addEventListener("DOMContentLoaded", init);
+
 
 
