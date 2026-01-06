@@ -1,7 +1,13 @@
+
 let sessionHistory = JSON.parse(
   localStorage.getItem("pomodoroHistory")
 ) || [];
+const backgroundCache = {
+  work: [],
+  break: []
+};
 
+const MAX_CACHE = 5;
 // === DOM Elements ===
 const timerDisplay = document.getElementById("timer");
 const sessionTypeDisplay = document.getElementById("session-type");
@@ -46,6 +52,8 @@ function init() {
     loadTheme();
     resetPomodoroIndicator();
     updateStats();
+    setRandomBackground();
+
 }
 
 function attachEventListeners() {
@@ -144,6 +152,7 @@ function handleSessionEnd() {
     if (currentSession === "work") {
     recordSession();
     }
+    setRandomBackground();
 
     unlockTasks();
     updateSessionLabel();
@@ -323,13 +332,47 @@ const breakBackgrounds = [
     "url('assets/images/break3.jpg')"
 ];
 
-function setRandomBackground() {
-    const pool = currentSession === "work" ? workBackgrounds : breakBackgrounds;
-    const randomImage = pool[Math.floor(Math.random() * pool.length)];
-    timerSection.style.backgroundImage = randomImage;
-    timerSection.style.backgroundSize = "cover";
-    timerSection.style.backgroundPosition = "center";
+function getUnsplashUrl(type) {
+  const query =
+    type === "work"
+      ? "study,workspace,focus,minimal"
+      : "nature,relax,calm,peaceful";
+
+  return `https://source.unsplash.com/1600x900/?${query}&sig=${Date.now()}`;
 }
+
+function setRandomBackground() {
+  const type = currentSession === "work" ? "work" : "break";
+  const cache = backgroundCache[type];
+
+  let imageUrl;
+
+  if (cache.length > 0) {
+    // ✅ Use cached image
+    imageUrl = cache[Math.floor(Math.random() * cache.length)];
+  } else {
+    // 🔄 Fetch new image
+    imageUrl = getUnsplashUrl(type);
+
+    cache.push(imageUrl);
+    if (cache.length > MAX_CACHE) cache.shift();
+  }
+
+  // 🎯 FORCE override CSS gradient
+  timerSection.style.background = `
+    linear-gradient(
+      rgba(0,0,0,${document.body.classList.contains("dark-mode") ? 0.55 : 0.35}),
+      rgba(0,0,0,${document.body.classList.contains("dark-mode") ? 0.55 : 0.35})
+    ),
+    url('${imageUrl}')
+  `;
+
+  timerSection.style.backgroundSize = "cover";
+  timerSection.style.backgroundPosition = "center";
+  timerSection.style.backgroundRepeat = "no-repeat";
+}
+
+
 
 // === Theme ===
 function loadTheme() {
@@ -338,9 +381,10 @@ function loadTheme() {
 }
 
 function toggleTheme() {
-    const dark = document.body.classList.toggle("dark-mode");
-    localStorage.setItem("theme", dark ? "dark" : "light");
+  const dark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("theme", dark ? "dark" : "light");
 }
+
 function updateTimerBackground() {
     timerSection.classList.remove("work-mode", "break-mode");
     timerSection.classList.add(
