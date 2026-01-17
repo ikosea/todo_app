@@ -30,6 +30,25 @@ export const Storage = {
     loadHistory() {
         const saved = localStorage.getItem("pomodoroHistory");
         return saved ? JSON.parse(saved) : [];
+    },
+
+    /**
+     * Save selected task ID
+     */
+    saveSelectedTaskId(taskId) {
+        if (taskId !== null) {
+            localStorage.setItem("selectedTaskId", taskId.toString());
+        } else {
+            localStorage.removeItem("selectedTaskId");
+        }
+    },
+
+    /**
+     * Load selected task ID
+     */
+    loadSelectedTaskId() {
+        const saved = localStorage.getItem("selectedTaskId");
+        return saved ? parseInt(saved) : null;
     }
 };
 

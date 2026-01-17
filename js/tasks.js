@@ -2,6 +2,8 @@
  * Tasks Module - Handles task management
  */
 
+import { Storage } from './storage.js';
+
 export const Tasks = {
     tasks: [],
     selectedTaskId: null,
@@ -13,8 +15,11 @@ export const Tasks = {
     /**
      * Initialize tasks from storage
      */
-    init(initialTasks = []) {
+    init(initialTasks = [], selectedTaskId = null) {
         this.tasks = initialTasks;
+        if (selectedTaskId !== null) {
+            this.selectedTaskId = selectedTaskId;
+        }
     },
 
     /**
@@ -44,6 +49,7 @@ export const Tasks = {
         
         if (this.selectedTaskId === taskId) {
             this.selectedTaskId = null;
+            Storage.saveSelectedTaskId(null);
             if (this.onTaskSelect) {
                 this.onTaskSelect(null);
             }
@@ -59,6 +65,9 @@ export const Tasks = {
         if (this.selectedTaskId === taskId) return;
 
         this.selectedTaskId = taskId;
+        
+        // Save selection to localStorage
+        Storage.saveSelectedTaskId(taskId);
         
         if (this.onTaskSelect) {
             const task = this.getTask(taskId);

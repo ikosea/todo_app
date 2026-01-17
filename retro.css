@@ -336,6 +336,127 @@ body {
     list-style: none;
 }
 
+/* Landing Page Styles */
+.landing-section {
+    text-align: center;
+    padding: 24px 0;
+}
+
+.landing-content {
+    margin-top: 24px;
+}
+
+.landing-text {
+    font-size: 12px;
+    color: #000000;
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+
+.landing-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+.nav-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    background: #c0c0c0;
+    border: 2px solid #000000;
+    color: #000000;
+    text-decoration: none;
+    box-shadow: 
+        inset -2px -2px 0px 0px #808080,
+        inset 2px 2px 0px 0px #ffffff,
+        2px 2px 0px 0px #000000;
+    min-width: 200px;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.nav-button:hover {
+    background: #d0d0d0;
+}
+
+.nav-button:active {
+    box-shadow: 
+        inset 2px 2px 0px 0px #808080,
+        inset -2px -2px 0px 0px #ffffff;
+    transform: translate(1px, 1px);
+}
+
+.nav-icon {
+    font-size: 16px;
+}
+
+.nav-label {
+    font-family: 'Geneva', 'Chicago', monospace;
+}
+
+/* Page Navigation */
+.page-nav {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #000000;
+    font-size: 11px;
+}
+
+.nav-link {
+    color: #000000;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.nav-link:hover {
+    color: #0000ff;
+}
+
+.nav-separator {
+    margin: 0 8px;
+    color: #808080;
+}
+
+/* Dashboard Section */
+.dashboard-section {
+    margin-bottom: 24px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.stat-card {
+    background: #ffffff;
+    border: 2px solid #000000;
+    padding: 16px;
+    text-align: center;
+    box-shadow: inset 2px 2px 0px 0px #808080;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: #000000;
+    margin-bottom: 4px;
+    font-family: 'Geneva', 'Chicago', monospace;
+}
+
+.stat-label {
+    font-size: 10px;
+    color: #808080;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
     .timer-display {
@@ -360,6 +481,18 @@ body {
     
     .task-input-container {
         flex-direction: column;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .landing-nav {
+        width: 100%;
+    }
+    
+    .nav-button {
+        width: 100%;
     }
 }
 

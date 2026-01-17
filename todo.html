@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo & Dashboard</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mac-gray': '#c0c0c0',
+                        'mac-dark-gray': '#808080',
+                        'mac-light-gray': '#e0e0e0',
+                        'mac-white': '#ffffff',
+                        'mac-black': '#000000',
+                    },
+                    fontFamily: {
+                        'chicago': ['Chicago', 'Geneva', 'monospace'],
+                        'geneva': ['Geneva', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Retro CSS -->
+    <link rel="stylesheet" href="retro.css">
+</head>
+<body class="bg-mac-gray font-geneva">
+    <main class="flex items-center justify-center min-h-screen p-4">
+        <!-- Mac-style Window -->
+        <section class="mac-window">
+            <!-- Window Title Bar -->
+            <header class="mac-titlebar">
+                <div class="mac-titlebar-controls">
+                    <span class="mac-close"></span>
+                    <span class="mac-minimize"></span>
+                    <span class="mac-maximize"></span>
+                </div>
+                <h1 class="mac-title">Todo & Dashboard</h1>
+            </header>
+            
+            <!-- Window Content -->
+            <div class="mac-content">
+                <!-- Navigation -->
+                <nav class="page-nav">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <span class="nav-separator">|</span>
+                    <a href="pomodoro.html" class="nav-link">Pomodoro Timer</a>
+                </nav>
+
+                <!-- Dashboard Section -->
+                <section class="dashboard-section">
+                    <h2 class="section-title">Dashboard</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="today-count">0</div>
+                            <div class="stat-label">Today</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="week-count">0</div>
+                            <div class="stat-label">This Week</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="focus-minutes">0</div>
+                            <div class="stat-label">Minutes</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Task List Section -->
+                <section class="task-section">
+                    <h2 class="section-title">Tasks</h2>
+                    <div class="task-input-container">
+                        <input type="text" id="task-input" class="mac-input" placeholder="Add a task...">
+                        <button type="button" id="add-task" class="mac-button">Add</button>
+                    </div>
+                    <ul id="task-list" class="task-list"></ul>
+                </section>
+            </div>
+        </section>
+    </main>
+    
+    <script type="module" src="js/todo-page.js"></script>
+</body>
+</html>
+
