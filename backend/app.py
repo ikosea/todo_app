@@ -1,7 +1,9 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -13,14 +15,30 @@ DB_FILE = "tasks.db"
 def init_db():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
+    
+    # Create users table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # Create tasks table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
             text TEXT NOT NULL,
             completed INTEGER DEFAULT 0,
-            pomodoroCount INTEGER DEFAULT 0
+            pomodoroCount INTEGER DEFAULT 0,
+            FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
+    
     conn.commit()
     conn.close()
 
@@ -37,6 +55,60 @@ init_db()
 @app.route("/")
 def hello():
     return jsonify({"message": "Backend is running"})
+
+# User Registration
+@app.route("/api/auth/register", methods=["POST"])
+def register():
+    data = request.get_json()
+    
+    if not data or "username" not in data or "email" not in data or "password" not in data:
+        return jsonify({"error": "Username, email, and password are required"}), 400
+    
+    username = data["username"].strip()
+    email = data["email"].strip().lower()
+    password = data["password"]
+    
+    if not username or not email or not password:
+        return jsonify({"error": "All fields are required"}), 400
+    
+    if len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters"}), 400
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Check if username already exists
+    cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+    if cursor.fetchone():
+        conn.close()
+        return jsonify({"error": "Username already exists"}), 400
+    
+    # Check if email already exists
+    cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+    if cursor.fetchone():
+        conn.close()
+        return jsonify({"error": "Email already exists"}), 400
+    
+    # Hash password
+    password_hash = generate_password_hash(password)
+    
+    # Insert new user
+    cursor.execute(
+        "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)",
+        (username, email, password_hash)
+    )
+    conn.commit()
+    user_id = cursor.lastrowid
+    conn.close()
+    
+    return jsonify({
+        "message": "User created successfully",
+        "user": {
+            "id": user_id,
+            "username": username,
+            "email": email
+        }
+    }), 201
 
 # Get all tasks
 @app.route("/api/tasks", methods=["GET"])
