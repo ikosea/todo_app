@@ -1,0 +1,365 @@
+/* Classic Macintosh System 7/8 Styling */
+
+/* Font Face - Chicago (System 7 default) with Geneva fallback */
+@font-face {
+    font-family: 'Chicago';
+    src: local('Chicago'), local('Geneva');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Geneva', 'Chicago', monospace;
+    background: #c0c0c0;
+    color: #000000;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Mac Window Container */
+.mac-window {
+    width: 100%;
+    max-width: 600px;
+    background: #c0c0c0;
+    border: 2px solid #000000;
+    box-shadow: 4px 4px 0px 0px #000000;
+}
+
+/* Mac Title Bar */
+.mac-titlebar {
+    background: linear-gradient(to bottom, #808080 0%, #808080 50%, #000000 50%, #000000 100%);
+    background-size: 100% 2px;
+    background-repeat: repeat-x;
+    background-position: 0 0, 0 1px;
+    background-color: #808080;
+    border-bottom: 2px solid #000000;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    height: 22px;
+    justify-content: flex-start;
+}
+
+.mac-titlebar-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.mac-close,
+.mac-minimize,
+.mac-maximize {
+    width: 12px;
+    height: 12px;
+    border: 1px solid #000000;
+    background: #c0c0c0;
+    display: inline-block;
+    box-shadow: inset -1px -1px 0px 0px #808080;
+}
+
+.mac-close {
+    background: #ff0000;
+}
+
+.mac-minimize {
+    background: #ffff00;
+}
+
+.mac-maximize {
+    background: #00ff00;
+}
+
+.mac-title {
+    font-family: 'Geneva', 'Chicago', monospace;
+    font-size: 12px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 1px 1px 0px #000000;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    text-align: center;
+}
+
+/* Window Content */
+.mac-content {
+    padding: 16px;
+    background: #c0c0c0;
+}
+
+/* Timer Section */
+.timer-section {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.session-info {
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    color: #000000;
+}
+
+.active-task-display {
+    background: #ffffff;
+    border: 2px solid #000000;
+    padding: 8px 12px;
+    margin: 16px 0;
+    text-align: left;
+    box-shadow: inset 2px 2px 0px 0px #808080;
+}
+
+.active-task-label {
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    color: #808080;
+}
+
+.active-task-text {
+    font-size: 12px;
+    color: #000000;
+}
+
+.timer-display {
+    font-family: 'Geneva', 'Chicago', monospace;
+    font-size: 64px;
+    font-weight: bold;
+    color: #000000;
+    margin: 24px 0;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 0px #808080;
+}
+
+.focus-hint {
+    font-size: 10px;
+    color: #808080;
+    margin-top: 8px;
+    text-transform: uppercase;
+}
+
+/* Pomodoro Indicator */
+.pomodoro-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.pomodoro-circle {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #000000;
+    background: #ffffff;
+    box-shadow: inset 1px 1px 0px 0px #808080;
+}
+
+.pomodoro-circle.filled {
+    background: #000000;
+    box-shadow: inset -1px -1px 0px 0px #808080;
+}
+
+/* Progress Bar */
+.progress-container {
+    width: 100%;
+    height: 16px;
+    background: #ffffff;
+    border: 2px solid #000000;
+    box-shadow: inset 2px 2px 0px 0px #808080;
+    margin: 16px 0;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: #000000;
+    width: 0%;
+    transition: width 0.3s linear;
+    box-shadow: inset -1px -1px 0px 0px #808080;
+}
+
+/* Mac Buttons */
+.mac-button {
+    font-family: 'Geneva', 'Chicago', monospace;
+    font-size: 12px;
+    padding: 6px 16px;
+    background: #c0c0c0;
+    border: 2px solid #000000;
+    color: #000000;
+    cursor: pointer;
+    box-shadow: 
+        inset -2px -2px 0px 0px #808080,
+        inset 2px 2px 0px 0px #ffffff,
+        2px 2px 0px 0px #000000;
+    text-transform: none;
+    font-weight: normal;
+    min-width: 80px;
+    margin: 4px;
+}
+
+.mac-button:hover {
+    background: #d0d0d0;
+}
+
+.mac-button:active {
+    box-shadow: 
+        inset 2px 2px 0px 0px #808080,
+        inset -2px -2px 0px 0px #ffffff;
+    transform: translate(1px, 1px);
+}
+
+.mac-button:focus {
+    outline: 2px dotted #000000;
+    outline-offset: 2px;
+}
+
+/* Task Section */
+.task-section {
+    margin-top: 24px;
+}
+
+.section-title {
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    color: #000000;
+    text-align: center;
+}
+
+.task-input-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.mac-input {
+    flex: 1;
+    font-family: 'Geneva', 'Chicago', monospace;
+    font-size: 12px;
+    padding: 6px 8px;
+    background: #ffffff;
+    border: 2px solid #000000;
+    color: #000000;
+    box-shadow: inset 2px 2px 0px 0px #808080;
+}
+
+.mac-input:focus {
+    outline: 2px dotted #000000;
+    outline-offset: 2px;
+}
+
+.mac-input::placeholder {
+    color: #808080;
+}
+
+/* Task List */
+.task-list {
+    list-style: none;
+    background: #ffffff;
+    border: 2px solid #000000;
+    box-shadow: inset 2px 2px 0px 0px #808080;
+    padding: 4px;
+}
+
+.task-item {
+    padding: 8px 12px;
+    margin: 2px 0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: transparent;
+    color: #000000;
+    font-size: 12px;
+    border: 1px solid transparent;
+}
+
+.task-item:hover {
+    background: #e0e0e0;
+}
+
+.task-item.selected {
+    background: #000000;
+    color: #ffffff;
+    box-shadow: none;
+}
+
+.task-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.task-delete-btn {
+    font-family: 'Geneva', 'Chicago', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    background: #c0c0c0;
+    border: 1px solid #000000;
+    color: #000000;
+    cursor: pointer;
+    box-shadow: 
+        inset -1px -1px 0px 0px #808080,
+        inset 1px 1px 0px 0px #ffffff;
+    min-width: auto;
+    margin: 0;
+}
+
+.task-delete-btn:hover {
+    background: #d0d0d0;
+}
+
+.task-delete-btn:active {
+    box-shadow: 
+        inset 1px 1px 0px 0px #808080,
+        inset -1px -1px 0px 0px #ffffff;
+    transform: translate(1px, 1px);
+}
+
+.empty-state {
+    padding: 24px;
+    text-align: center;
+    color: #808080;
+    font-style: italic;
+    list-style: none;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .timer-display {
+        font-size: 48px;
+    }
+    
+    .mac-window {
+        margin: 8px;
+    }
+    
+    .mac-content {
+        padding: 12px;
+    }
+    
+    .controls {
+        flex-direction: column;
+    }
+    
+    .mac-button {
+        width: 100%;
+    }
+    
+    .task-input-container {
+        flex-direction: column;
+    }
+}
+
