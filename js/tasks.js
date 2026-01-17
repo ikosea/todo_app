@@ -3,6 +3,7 @@
  */
 
 import { Storage } from './storage.js';
+import { API } from './api.js';
 
 export const Tasks = {
     tasks: [],
@@ -23,39 +24,38 @@ export const Tasks = {
     },
 
     /**
-     * Add a new task
+     * Add a new task (async - calls backend API)
      */
-    add(text) {
+    async add(text) {
         const trimmed = text.trim();
         if (!trimmed) return null;
 
-        const newTask = {
-            id: Date.now(),
-            text: trimmed,
-            completed: false,
-            pomodoroCount: 0
-        };
-
-        this.tasks.push(newTask);
-        this.notifyChange();
+        const newTask = await API.addTask(trimmed);
+        if (newTask) {
+            this.tasks.push(newTask);
+            this.notifyChange();
+        }
         return newTask;
     },
 
     /**
-     * Remove a task
+     * Remove a task (async - calls backend API)
      */
-    remove(taskId) {
-        this.tasks = this.tasks.filter(task => task.id !== taskId);
-        
-        if (this.selectedTaskId === taskId) {
-            this.selectedTaskId = null;
-            Storage.saveSelectedTaskId(null);
-            if (this.onTaskSelect) {
-                this.onTaskSelect(null);
+    async remove(taskId) {
+        const result = await API.deleteTask(taskId);
+        if (result) {
+            this.tasks = this.tasks.filter(task => task.id !== taskId);
+            
+            if (this.selectedTaskId === taskId) {
+                this.selectedTaskId = null;
+                Storage.saveSelectedTaskId(null);
+                if (this.onTaskSelect) {
+                    this.onTaskSelect(null);
+                }
             }
+            
+            this.notifyChange();
         }
-        
-        this.notifyChange();
     },
 
     /**
@@ -90,15 +90,18 @@ export const Tasks = {
     },
 
     /**
-     * Increment pomodoro count for selected task
+     * Increment pomodoro count for selected task (async - calls backend API)
      */
-    incrementPomodoro() {
+    async incrementPomodoro() {
         if (!this.selectedTaskId) return;
 
-        const task = this.getTask(this.selectedTaskId);
-        if (task) {
-            task.pomodoroCount++;
-            this.notifyChange();
+        const updatedTask = await API.incrementPomodoro(this.selectedTaskId);
+        if (updatedTask) {
+            const task = this.getTask(this.selectedTaskId);
+            if (task) {
+                task.pomodoroCount = updatedTask.pomodoroCount;
+                this.notifyChange();
+            }
         }
     },
 

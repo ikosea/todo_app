@@ -14,12 +14,12 @@ class TodoPage {
     /**
      * Initialize the Todo page
      */
-    init() {
+    async init() {
         // Initialize UI
         UI.init();
 
-        // Initialize Tasks
-        const savedTasks = Storage.loadTasks();
+        // Initialize Tasks from backend API
+        const savedTasks = await Storage.loadTasks();
         const selectedTaskId = Storage.loadSelectedTaskId();
         Tasks.init(savedTasks, selectedTaskId);
         Tasks.onTaskSelect = (task) => {
@@ -77,8 +77,9 @@ class TodoPage {
             
             // Handle delete button
             if (e.target.classList.contains("task-delete-btn")) {
-                Tasks.remove(taskId);
-                this.updateStats();
+                Tasks.remove(taskId).then(() => {
+                    this.updateStats();
+                });
                 return;
             }
 
@@ -91,7 +92,7 @@ class TodoPage {
     /**
      * Add a new task
      */
-    addTask() {
+    async addTask() {
         const taskInput = document.getElementById("task-input");
         const text = taskInput ? taskInput.value.trim() : "";
         
@@ -99,7 +100,7 @@ class TodoPage {
             return;
         }
         
-        const task = Tasks.add(text);
+        const task = await Tasks.add(text);
         
         if (task) {
             if (taskInput) {

@@ -15,7 +15,7 @@ class PomodoroPage {
     /**
      * Initialize the Pomodoro page
      */
-    init() {
+    async init() {
         // Initialize UI
         UI.init();
 
@@ -34,8 +34,8 @@ class PomodoroPage {
             this.updateTaskLockState(state.isRunning);
         };
 
-        // Initialize Tasks (for task selection)
-        const savedTasks = Storage.loadTasks();
+        // Initialize Tasks from backend API
+        const savedTasks = await Storage.loadTasks();
         const selectedTaskId = Storage.loadSelectedTaskId();
         Tasks.init(savedTasks, selectedTaskId);
         Tasks.onTaskSelect = (task) => {
@@ -98,13 +98,13 @@ class PomodoroPage {
     /**
      * Handle session end
      */
-    handleSessionEnd() {
+    async handleSessionEnd() {
         // Play notification sound
         this.playNotificationSound();
 
         // Increment pomodoro count for selected task
         if (Timer.currentSession === "work") {
-            Tasks.incrementPomodoro();
+            await Tasks.incrementPomodoro();
         }
 
         // Update pomodoro indicator

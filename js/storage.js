@@ -1,20 +1,21 @@
 /**
- * Storage Module - Handles localStorage operations
+ * Storage Module - Handles localStorage and API operations
  */
+import { API } from './api.js';
+
 export const Storage = {
     /**
-     * Save tasks to localStorage
+     * Load tasks from backend API
      */
-    saveTasks(tasks) {
-        localStorage.setItem("pomodoroTasks", JSON.stringify(tasks));
+    async loadTasks() {
+        return await API.getTasks();
     },
 
     /**
-     * Load tasks from localStorage
+     * Save tasks - now handled by API (no need to save all tasks)
      */
-    loadTasks() {
-        const saved = localStorage.getItem("pomodoroTasks");
-        return saved ? JSON.parse(saved) : [];
+    saveTasks(tasks) {
+        // Tasks are saved individually via API, this is kept for compatibility
     },
 
     /**
