@@ -3,10 +3,14 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
-from datetime import datetime
+import jwt
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
+
+# Secret key for JWT (in production, use environment variable)
+app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
 
 # Database file
 DB_FILE = "tasks.db"
@@ -143,10 +147,18 @@ def login():
         conn.close()
         return jsonify({"error": "Invalid username or password"}), 401
     
+    # Generate JWT token (expires in 7 days)
+    token = jwt.encode({
+        'user_id': user["id"],
+        'username': user["username"],
+        'exp': datetime.utcnow() + timedelta(days=7)
+    }, app.config['SECRET_KEY'], algorithm='HS256')
+    
     conn.close()
     
     return jsonify({
         "message": "Login successful",
+        "token": token,
         "user": {
             "id": user["id"],
             "username": user["username"],

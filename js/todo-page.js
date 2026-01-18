@@ -34,6 +34,7 @@ class TodoPage {
         // Initial UI updates
         UI.renderTasks(Tasks.getAll(), Tasks.selectedTaskId, false);
         this.updateStats();
+        this.updateUserGreeting();
 
         // Attach event listeners
         this.attachEventListeners();
@@ -119,6 +120,26 @@ class TodoPage {
      */
     updateTaskSelection() {
         UI.renderTasks(Tasks.getAll(), Tasks.selectedTaskId, false);
+    }
+
+    /**
+     * Update user greeting
+     */
+    updateUserGreeting() {
+        const greetingEl = document.getElementById('user-greeting');
+        if (!greetingEl) return;
+        
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            try {
+                const user = JSON.parse(currentUser);
+                greetingEl.textContent = `Welcome, ${user.username}`;
+            } catch (e) {
+                greetingEl.textContent = 'Welcome';
+            }
+        } else {
+            greetingEl.textContent = 'Welcome';
+        }
     }
 
     /**
