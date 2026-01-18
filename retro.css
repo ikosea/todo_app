@@ -48,6 +48,90 @@ body {
     padding-top: 22px;
 }
 
+/* Desktop Icons Container */
+.desktop-icons {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 40px 60px;
+}
+
+/* Desktop Icon - Classic Mac Style */
+.desktop-icon {
+    width: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    position: relative;
+}
+
+/* Icon Graphic */
+.icon-graphic {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+.icon-graphic svg {
+    width: 32px;
+    height: 32px;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+/* Icon Label */
+.icon-label {
+    font-family: 'Geneva', 'Chicago', monospace;
+    font-size: 9px;
+    color: #000000;
+    text-align: center;
+    max-width: 64px;
+    word-wrap: break-word;
+    line-height: 1.2;
+    padding: 2px 4px;
+    border-radius: 0;
+}
+
+/* Icon Hover State */
+.desktop-icon:hover .icon-label {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Icon Pressed State - Invert/Depress */
+.desktop-icon.pressed {
+    transform: translate(1px, 1px);
+}
+
+.desktop-icon.pressed .icon-graphic svg {
+    filter: invert(1);
+}
+
+.desktop-icon.pressed .icon-label {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Icon Selected State */
+.desktop-icon.selected .icon-label {
+    background: #000000;
+    color: #ffffff;
+}
+
+.desktop-icon.selected .icon-graphic svg {
+    filter: invert(1);
+}
+
 /* Desktop Menu Bar (Global, Always Visible) */
 .desktop-menubar {
     position: fixed;

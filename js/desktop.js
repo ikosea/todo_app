@@ -2,6 +2,7 @@
  * Desktop Module - Handles desktop environment
  * Phase 1: Desktop Foundation
  * Phase 2: Custom Cursor
+ * Phase 3: Desktop Icons
  */
 
 class Desktop {
@@ -10,6 +11,7 @@ class Desktop {
         this.cursorX = 0;
         this.cursorY = 0;
         this.cursorState = 'normal';
+        this.selectedIcon = null;
         this.init();
     }
 
@@ -18,6 +20,7 @@ class Desktop {
      */
     init() {
         this.initCursor();
+        this.initIcons();
         this.attachEventListeners();
         console.log('Desktop initialized');
     }
@@ -73,14 +76,69 @@ class Desktop {
         if (tagName === 'input' || tagName === 'textarea' || target.isContentEditable) {
             this.updateCursorState('text');
         } 
-        // Pointer cursor for clickable elements
-        else if (target.closest('button, a, .clickable, .mac-menu-item, .mac-button')) {
+        // Pointer cursor for clickable elements (including desktop icons)
+        else if (target.closest('button, a, .clickable, .mac-menu-item, .mac-button, .desktop-icon')) {
             this.updateCursorState('pointer');
         } 
         // Normal arrow cursor for everything else
         else {
             this.updateCursorState('normal');
         }
+    }
+
+    /**
+     * Initialize desktop icons
+     */
+    initIcons() {
+        const icons = document.querySelectorAll('.desktop-icon');
+        icons.forEach(icon => {
+            icon.addEventListener('click', (e) => this.handleIconClick(e, icon));
+            icon.addEventListener('mousedown', (e) => this.handleIconMouseDown(e, icon));
+            icon.addEventListener('mouseup', (e) => this.handleIconMouseUp(e, icon));
+        });
+    }
+
+    /**
+     * Handle icon click
+     */
+    handleIconClick(e, icon) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Remove previous selection
+        if (this.selectedIcon) {
+            this.selectedIcon.classList.remove('selected');
+        }
+
+        // Select clicked icon
+        icon.classList.add('selected');
+        this.selectedIcon = icon;
+
+        // Get app type
+        const appType = icon.getAttribute('data-app');
+        
+        // Handle app launch (will be implemented in Phase 4)
+        console.log(`Launching app: ${appType}`);
+        
+        // For now, just show feedback
+        setTimeout(() => {
+            icon.classList.remove('selected');
+            this.selectedIcon = null;
+        }, 200);
+    }
+
+    /**
+     * Handle icon mouse down (press feedback)
+     */
+    handleIconMouseDown(e, icon) {
+        icon.classList.add('pressed');
+    }
+
+    /**
+     * Handle icon mouse up (release feedback)
+     */
+    handleIconMouseUp(e, icon) {
+        icon.classList.remove('pressed');
     }
 
     /**
@@ -101,6 +159,16 @@ class Desktop {
         document.addEventListener('mouseenter', () => {
             if (this.cursor) {
                 this.cursor.classList.remove('hidden');
+            }
+        });
+
+        // Click on desktop to deselect icons
+        document.querySelector('.desktop-wallpaper').addEventListener('click', (e) => {
+            if (e.target.classList.contains('desktop-wallpaper') || e.target.classList.contains('desktop-icons')) {
+                if (this.selectedIcon) {
+                    this.selectedIcon.classList.remove('selected');
+                    this.selectedIcon = null;
+                }
             }
         });
     }
