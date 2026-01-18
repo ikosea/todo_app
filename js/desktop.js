@@ -3,7 +3,11 @@
  * Phase 1: Desktop Foundation
  * Phase 2: Custom Cursor
  * Phase 3: Desktop Icons
+ * Phase 4: Window System
+ * Phase 5: App Integration
  */
+
+import { WindowApps } from './window-apps.js';
 
 class Desktop {
     constructor() {
@@ -134,9 +138,103 @@ class Desktop {
     }
 
     /**
+     * Check if user is authenticated
+     */
+    async checkAuthentication() {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            return false;
+        }
+
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            return response.ok;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    /**
+     * Show authentication required message
+     */
+    showAuthRequiredMessage() {
+        // Create alert window
+        const alertWindowId = `alert-${Date.now()}`;
+        const alertWindow = document.createElement('div');
+        alertWindow.id = alertWindowId;
+        alertWindow.className = 'desktop-window desktop-alert-window';
+        alertWindow.style.zIndex = this.windowZIndex + 100;
+        alertWindow.style.width = '400px';
+        alertWindow.style.height = '200px';
+
+        alertWindow.innerHTML = `
+            <header class="mac-titlebar">
+                <div class="mac-titlebar-controls">
+                    <span class="mac-close" id="alert-close"></span>
+                    <span class="mac-minimize"></span>
+                    <span class="mac-maximize"></span>
+                </div>
+                <h1 class="mac-title">Authentication Required</h1>
+            </header>
+            <div class="mac-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px;">
+                <p style="margin-bottom: 16px; font-size: 12px;">You must sign in first to access this app.</p>
+                <p style="margin-bottom: 24px; font-size: 12px;">Please click the Auth icon to sign in or sign up.</p>
+                <button class="mac-button" id="open-auth-btn" style="width: auto; padding: 8px 24px;">Open Auth</button>
+            </div>
+        `;
+
+        // Add to DOM
+        const windowsContainer = document.getElementById('windows-container');
+        if (windowsContainer) {
+            windowsContainer.appendChild(alertWindow);
+        }
+
+        // Close button
+        const closeBtn = alertWindow.querySelector('#alert-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                // Remove from windows array
+                const index = this.windows.findIndex(w => w.id === alertWindowId);
+                if (index > -1) {
+                    this.windows.splice(index, 1);
+                }
+                alertWindow.remove();
+            });
+        }
+
+        // Open Auth button
+        const openAuthBtn = alertWindow.querySelector('#open-auth-btn');
+        if (openAuthBtn) {
+            openAuthBtn.addEventListener('click', () => {
+                // Remove from windows array
+                const index = this.windows.findIndex(w => w.id === alertWindowId);
+                if (index > -1) {
+                    this.windows.splice(index, 1);
+                }
+                alertWindow.remove();
+                this.openWindow('auth');
+            });
+        }
+
+        // Add to windows array for proper z-index management
+        this.windows.push({
+            id: alertWindowId,
+            appType: 'alert',
+            element: alertWindow
+        });
+
+        // Focus the alert
+        this.focusWindow(alertWindowId);
+    }
+
+    /**
      * Handle icon click
      */
-    handleIconClick(e, icon) {
+    async handleIconClick(e, icon) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -152,7 +250,28 @@ class Desktop {
         // Get app type
         const appType = icon.getAttribute('data-app');
         
-        // Launch app window
+        // Auth app is always accessible
+        if (appType === 'auth') {
+            this.openWindow(appType);
+            setTimeout(() => {
+                icon.classList.remove('selected');
+                this.selectedIcon = null;
+            }, 200);
+            return;
+        }
+
+        // Check authentication for other apps
+        const isAuthenticated = await this.checkAuthentication();
+        
+        if (!isAuthenticated) {
+            // Show authentication required message
+            this.showAuthRequiredMessage();
+            icon.classList.remove('selected');
+            this.selectedIcon = null;
+            return;
+        }
+
+        // Launch app window if authenticated
         this.openWindow(appType);
         
         // Deselect icon after a moment
@@ -208,10 +327,16 @@ class Desktop {
         // Window title based on app type
         const titles = {
             'productivity': 'Productivity App',
+            'todo': 'Todo & Dashboard',
+            'pomodoro': 'Pomodoro Timer',
+            'auth': 'Authentication',
             'folder': 'Folder',
             'trash': 'Trash'
         };
         const title = titles[appType] || 'Window';
+
+        // Get app content
+        const appContent = WindowApps.getAppContent(appType);
 
         window.innerHTML = `
             <header class="mac-titlebar">
@@ -222,10 +347,7 @@ class Desktop {
                 </div>
                 <h1 class="mac-title">${title}</h1>
             </header>
-            <div class="mac-content">
-                <p>${title} content will be loaded here.</p>
-                <p>This is a placeholder window.</p>
-            </div>
+            ${appContent}
         `;
 
         // Add event listeners
@@ -256,6 +378,9 @@ class Desktop {
         window.addEventListener('mousedown', () => {
             this.focusWindow(id);
         });
+
+        // Initialize app JavaScript
+        WindowApps.initApp(window, appType);
 
         return window;
     }
@@ -353,6 +478,34 @@ class Desktop {
     }
 
     /**
+     * Show desktop (minimize all windows)
+     */
+    showDesktop() {
+        this.windows.forEach(window => {
+            window.element.style.display = 'none';
+        });
+    }
+
+    /**
+     * Close all windows
+     */
+    closeAllWindows() {
+        const windowsToClose = [...this.windows];
+        windowsToClose.forEach(window => {
+            this.closeWindow(window.id);
+        });
+    }
+
+    /**
+     * Restore all windows
+     */
+    restoreAllWindows() {
+        this.windows.forEach(window => {
+            window.element.style.display = 'flex';
+        });
+    }
+
+    /**
      * Attach event listeners
      */
     attachEventListeners() {
@@ -380,6 +533,79 @@ class Desktop {
                     this.selectedIcon.classList.remove('selected');
                     this.selectedIcon = null;
                 }
+            }
+        });
+
+        // Listen for app open events (from productivity menu)
+        window.addEventListener('openApp', (e) => {
+            const { appType } = e.detail;
+            this.openWindow(appType);
+        });
+
+        // Listen for show desktop events (from window menus)
+        window.addEventListener('showDesktop', () => {
+            this.showDesktop();
+        });
+
+        // Listen for close window events (from window menus)
+        window.addEventListener('closeWindow', (e) => {
+            const { windowId } = e.detail;
+            this.closeWindow(windowId);
+        });
+
+        // Listen for auth required events
+        window.addEventListener('showAuthRequired', () => {
+            this.showAuthRequiredMessage();
+        });
+
+        // Desktop menu bar interactions
+        this.setupDesktopMenuBar();
+    }
+
+    /**
+     * Setup desktop menu bar
+     */
+    setupDesktopMenuBar() {
+        const specialMenu = document.getElementById('desktop-special-menu');
+        const showDesktopBtn = document.getElementById('show-desktop');
+        const closeAllBtn = document.getElementById('close-all-windows');
+
+        // Show desktop button
+        if (showDesktopBtn) {
+            showDesktopBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showDesktop();
+                // Close dropdown
+                if (specialMenu) {
+                    specialMenu.classList.remove('active');
+                }
+            });
+        }
+
+        // Close all windows button
+        if (closeAllBtn) {
+            closeAllBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.closeAllWindows();
+                // Close dropdown
+                if (specialMenu) {
+                    specialMenu.classList.remove('active');
+                }
+            });
+        }
+
+        // Toggle dropdown on menu click
+        if (specialMenu) {
+            specialMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                specialMenu.classList.toggle('active');
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (specialMenu && !specialMenu.contains(e.target)) {
+                specialMenu.classList.remove('active');
             }
         });
     }

@@ -232,6 +232,15 @@ body {
     animation: window-appear 0.2s ease-out;
 }
 
+/* Alert Window - Centered on Screen */
+.desktop-alert-window {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+}
+
 @keyframes window-appear {
     from {
         opacity: 0;

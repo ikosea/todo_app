@@ -9,6 +9,9 @@ import { Storage } from './storage.js';
 import { AuthCheck } from './auth-check.js';
 import { API } from './api.js';
 
+// Export for use in windows
+export default PomodoroPage;
+
 class PomodoroPage {
     constructor() {
         this.sessionHistory = Storage.loadHistory();
@@ -210,9 +213,11 @@ class PomodoroPage {
     }
 }
 
-// Initialize page when DOM is ready
-document.addEventListener("DOMContentLoaded", () => {
-    const page = new PomodoroPage();
-    page.init();
-});
+// Initialize page when DOM is ready (only if not in a window)
+if (document.body && !document.body.classList.contains('desktop-body')) {
+    document.addEventListener("DOMContentLoaded", () => {
+        const page = new PomodoroPage();
+        page.init();
+    });
+}
 

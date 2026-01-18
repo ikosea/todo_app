@@ -206,8 +206,13 @@ class AuthPage {
     }
 }
 
-// Initialize page when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    new AuthPage();
-});
+// Export for use in windows
+export default AuthPage;
+
+// Initialize page when DOM is ready (only if not in a window)
+if (document.body && !document.body.classList.contains('desktop-body')) {
+    document.addEventListener('DOMContentLoaded', () => {
+        new AuthPage();
+    });
+}
 
