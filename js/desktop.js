@@ -120,6 +120,11 @@ class Desktop {
         // Handle app launch (will be implemented in Phase 4)
         console.log(`Launching app: ${appType}`);
         
+        // For productivity app, can launch todo or pomodoro
+        if (appType === 'productivity') {
+            // Will show menu or launch default in Phase 4
+        }
+        
         // For now, just show feedback
         setTimeout(() => {
             icon.classList.remove('selected');
