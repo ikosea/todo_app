@@ -69,10 +69,10 @@ class Desktop {
         const cursorSvg = document.getElementById('cursor-svg');
         if (cursorSvg) {
             const cursorMap = {
-                'normal': 'cursors/normal-select.svg',
-                'pointer': 'cursors/link-select.svg',
-                'help': 'cursors/help-select.svg',
-                'busy': 'cursors/busy.svg'
+                'normal': 'cursors/Normal Select.cur',
+                'pointer': 'cursors/Link Select.cur',
+                'help': 'cursors/Help Select.cur',
+                'busy': 'cursors/Busy.cur'
             };
             
             if (cursorMap[newState]) {

@@ -30,7 +30,13 @@ body {
     height: 100vh;
     overflow: hidden;
     position: fixed;
-    cursor: none;
+    cursor: none; /* Hide system cursor only within the app */
+}
+
+/* Hide system cursor only within desktop body and its children */
+.desktop-body,
+.desktop-body * {
+    cursor: none !important;
 }
 
 /* Desktop Wallpaper */
