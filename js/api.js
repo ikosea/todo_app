@@ -123,6 +123,31 @@ export const API = {
             console.error('Error registering:', error);
             return null;
         }
+    },
+
+    /**
+     * Get current user
+     */
+    async getCurrentUser() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/me`, {
+                headers: getAuthHeaders()
+            });
+            if (!response.ok) throw new Error('Failed to get user');
+            return await response.json();
+        } catch (error) {
+            console.error('Error getting user:', error);
+            return null;
+        }
+    },
+
+    /**
+     * Logout (clear local storage)
+     */
+    logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('currentUser');
+        window.location.href = 'auth.html';
     }
 };
 

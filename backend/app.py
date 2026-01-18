@@ -12,6 +12,34 @@ CORS(app)
 # Secret key for JWT (in production, use environment variable)
 app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
 
+# Authentication middleware
+def verify_token(f):
+    def wrapper(*args, **kwargs):
+        token = None
+        auth_header = request.headers.get('Authorization')
+        
+        if auth_header:
+            try:
+                token = auth_header.split(' ')[1]  # Bearer <token>
+            except:
+                return jsonify({"error": "Invalid token format"}), 401
+        
+        if not token:
+            return jsonify({"error": "Authentication required"}), 401
+        
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            request.current_user_id = data['user_id']
+            request.current_username = data['username']
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "Token expired"}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"error": "Invalid token"}), 401
+        
+        return f(*args, **kwargs)
+    wrapper.__name__ = f.__name__
+    return wrapper
+
 # Database file
 DB_FILE = "tasks.db"
 
@@ -166,7 +194,33 @@ def login():
         }
     }), 200
 
-# Get all tasks
+# Get current user
+@app.route("/api/auth/me", methods=["GET"])
+@verify_token
+def get_current_user():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username, email FROM users WHERE id = ?", (request.current_user_id,))
+    user = cursor.fetchone()
+    conn.close()
+    
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    return jsonify(dict(user)), 200
+
+# Get all tasks (protected - user-specific)
+@app.route("/api/tasks", methods=["GET"])
+@verify_token
+def get_tasks():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM tasks WHERE user_id = ?", (request.current_user_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    
+    tasks = [dict(row) for row in rows]
+    return jsonify({"tasks": tasks})
 @app.route("/api/tasks", methods=["GET"])
 def get_tasks():
     conn = get_db()
@@ -178,8 +232,9 @@ def get_tasks():
     tasks = [dict(row) for row in rows]
     return jsonify({"tasks": tasks})
 
-# Add a new task
+# Add a new task (protected - user-specific)
 @app.route("/api/tasks", methods=["POST"])
+@verify_token
 def add_task():
     data = request.get_json()
     
@@ -189,8 +244,8 @@ def add_task():
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO tasks (text, completed, pomodoroCount) VALUES (?, ?, ?)",
-        (data["text"], 0, 0)
+        "INSERT INTO tasks (user_id, text, completed, pomodoroCount) VALUES (?, ?, ?, ?)",
+        (request.current_user_id, data["text"], 0, 0)
     )
     conn.commit()
     task_id = cursor.lastrowid
@@ -198,6 +253,7 @@ def add_task():
     
     new_task = {
         "id": task_id,
+        "user_id": request.current_user_id,
         "text": data["text"],
         "completed": 0,
         "pomodoroCount": 0
@@ -205,30 +261,32 @@ def add_task():
     
     return jsonify(new_task), 201
 
-# Delete a task
+# Delete a task (protected - user-specific)
 @app.route("/api/tasks/<int:task_id>", methods=["DELETE"])
+@verify_token
 def delete_task(task_id):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+    cursor.execute("SELECT * FROM tasks WHERE id = ? AND user_id = ?", (task_id, request.current_user_id))
     task = cursor.fetchone()
     
     if not task:
         conn.close()
         return jsonify({"error": "Task not found"}), 404
     
-    cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+    cursor.execute("DELETE FROM tasks WHERE id = ? AND user_id = ?", (task_id, request.current_user_id))
     conn.commit()
     conn.close()
     
     return jsonify({"message": "Task deleted"}), 200
 
-# Update task pomodoro count
+# Update task pomodoro count (protected - user-specific)
 @app.route("/api/tasks/<int:task_id>/pomodoro", methods=["POST"])
+@verify_token
 def increment_pomodoro(task_id):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+    cursor.execute("SELECT * FROM tasks WHERE id = ? AND user_id = ?", (task_id, request.current_user_id))
     task = cursor.fetchone()
     
     if not task:
@@ -237,11 +295,11 @@ def increment_pomodoro(task_id):
     
     new_count = dict(task)["pomodoroCount"] + 1
     cursor.execute(
-        "UPDATE tasks SET pomodoroCount = ? WHERE id = ?",
-        (new_count, task_id)
+        "UPDATE tasks SET pomodoroCount = ? WHERE id = ? AND user_id = ?",
+        (new_count, task_id, request.current_user_id)
     )
     conn.commit()
-    cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+    cursor.execute("SELECT * FROM tasks WHERE id = ? AND user_id = ?", (task_id, request.current_user_id))
     updated_task = cursor.fetchone()
     conn.close()
     

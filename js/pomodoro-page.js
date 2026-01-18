@@ -6,6 +6,8 @@ import { Timer } from './timer.js';
 import { Tasks } from './tasks.js';
 import { UI } from './ui.js';
 import { Storage } from './storage.js';
+import { AuthCheck } from './auth-check.js';
+import { API } from './api.js';
 
 class PomodoroPage {
     constructor() {
@@ -16,6 +18,10 @@ class PomodoroPage {
      * Initialize the Pomodoro page
      */
     async init() {
+        // Check authentication
+        const isAuth = await AuthCheck.requireAuth();
+        if (!isAuth) return;
+
         // Initialize UI
         UI.init();
 
@@ -52,9 +58,47 @@ class PomodoroPage {
         UI.updateSessionType(Timer.getSessionLabel());
         UI.updateActiveTask(Tasks.getSelectedTask());
         UI.resetPomodoroIndicator();
+        this.setupMenuBar();
 
         // Attach event listeners
         this.attachEventListeners();
+    }
+
+    /**
+     * Setup menu bar interactions
+     */
+    setupMenuBar() {
+        const userMenu = document.getElementById('user-menu');
+        const dropdown = document.getElementById('user-dropdown');
+        const logoutItem = document.getElementById('logout-item');
+        const menuUsername = document.getElementById('menu-username');
+
+        // Update menu username
+        const currentUser = AuthCheck.getCurrentUser();
+        if (currentUser && menuUsername) {
+            menuUsername.textContent = currentUser.username;
+        }
+
+        // Toggle dropdown
+        if (userMenu) {
+            userMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userMenu.classList.toggle('active');
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            if (userMenu) userMenu.classList.remove('active');
+        });
+
+        // Logout
+        if (logoutItem) {
+            logoutItem.addEventListener('click', (e) => {
+                e.stopPropagation();
+                API.logout();
+            });
+        }
     }
 
     /**
