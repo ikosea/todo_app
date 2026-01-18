@@ -110,6 +110,50 @@ def register():
         }
     }), 201
 
+# User Login
+@app.route("/api/auth/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    
+    if not data or "username" not in data or "password" not in data:
+        return jsonify({"error": "Username and password are required"}), 400
+    
+    username_or_email = data["username"].strip()
+    password = data["password"]
+    
+    if not username_or_email or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Find user by username or email
+    cursor.execute(
+        "SELECT * FROM users WHERE username = ? OR email = ?",
+        (username_or_email, username_or_email.lower())
+    )
+    user = cursor.fetchone()
+    
+    if not user:
+        conn.close()
+        return jsonify({"error": "Invalid username or password"}), 401
+    
+    # Verify password
+    if not check_password_hash(user["password_hash"], password):
+        conn.close()
+        return jsonify({"error": "Invalid username or password"}), 401
+    
+    conn.close()
+    
+    return jsonify({
+        "message": "Login successful",
+        "user": {
+            "id": user["id"],
+            "username": user["username"],
+            "email": user["email"]
+        }
+    }), 200
+
 # Get all tasks
 @app.route("/api/tasks", methods=["GET"])
 def get_tasks():
