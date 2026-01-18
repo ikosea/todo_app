@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desktop</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mac-gray': '#c0c0c0',
+                        'mac-dark-gray': '#808080',
+                        'mac-light-gray': '#e0e0e0',
+                        'mac-white': '#ffffff',
+                        'mac-black': '#000000',
+                    },
+                    fontFamily: {
+                        'chicago': ['Chicago', 'Geneva', 'monospace'],
+                        'geneva': ['Geneva', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Retro CSS -->
+    <link rel="stylesheet" href="retro.css">
+</head>
+<body class="desktop-body">
+    <!-- Global Menu Bar (Always Visible) -->
+    <nav class="desktop-menubar">
+        <div class="mac-menu-item">
+            <span>File</span>
+        </div>
+        <div class="mac-menu-item">
+            <span>Edit</span>
+        </div>
+        <div class="mac-menu-item">
+            <span>View</span>
+        </div>
+        <div class="mac-menu-item">
+            <span>Label</span>
+        </div>
+        <div class="mac-menu-item">
+            <span>Special</span>
+        </div>
+    </nav>
+
+    <!-- Desktop Wallpaper -->
+    <div class="desktop-wallpaper">
+        <!-- Desktop Icons will go here in Phase 3 -->
+        <!-- App Windows will appear here in Phase 4 -->
+    </div>
+    
+    <script type="module" src="js/desktop.js"></script>
+</body>
+</html>
+
