@@ -1,29 +1,50 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
 import jwt
+import re
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-# Configure CORS to allow all origins for all routes
-CORS(app, origins="*", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
-     allow_headers=["Content-Type", "Authorization"])
 
-# Secret key for JWT (in production, use environment variable)
-app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
+# Get configuration from environment variables with fallbacks
+SECRET_KEY = os.getenv('SECRET_KEY', os.urandom(32).hex())
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:8000,http://127.0.0.1:8000').split(',')
 
-# Ensure CORS headers are added to all responses
+app.config['SECRET_KEY'] = SECRET_KEY
+
+# Configure CORS with specific origins
+CORS(app, 
+     origins=ALLOWED_ORIGINS,
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
+     allow_headers=["Content-Type", "Authorization"],
+     supports_credentials=True)
+
+# Configure rate limiting
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
+# Ensure CORS headers are added to all responses (flask-cors handles this, but keep for compatibility)
 @app.after_request
 def after_request(response):
-    # Only add if not already set by flask-cors to avoid duplicates
-    if 'Access-Control-Allow-Origin' not in response.headers:
-        response.headers.add('Access-Control-Allow-Origin', '*')
-    if 'Access-Control-Allow-Headers' not in response.headers:
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    if 'Access-Control-Allow-Methods' not in response.headers:
-        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    # CORS is handled by flask-cors, but ensure headers are set for allowed origins
+    origin = request.headers.get('Origin')
+    if origin and origin in ALLOWED_ORIGINS:
+        if 'Access-Control-Allow-Origin' not in response.headers:
+            response.headers.add('Access-Control-Allow-Origin', origin)
+            response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
 # Global error handler to ensure CORS headers on errors
@@ -33,10 +54,11 @@ def handle_error(e):
     import traceback
     print(f"Error: {str(e)}")
     print(traceback.format_exc())
-    response = make_response(jsonify({"error": str(e)}), 500)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    response = make_response(jsonify({"error": "Internal server error"}), 500)
+    origin = request.headers.get('Origin')
+    if origin and origin in ALLOWED_ORIGINS:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
 # Authentication middleware
@@ -135,8 +157,36 @@ init_db()
 def hello():
     return jsonify({"message": "Backend is running"})
 
+# Input validation helpers
+def validate_username(username):
+    if not username or len(username.strip()) < 3:
+        return False, "Username must be at least 3 characters"
+    if len(username) > 50:
+        return False, "Username must be less than 50 characters"
+    if not re.match(r'^[a-zA-Z0-9_]+$', username):
+        return False, "Username can only contain letters, numbers, and underscores"
+    return True, None
+
+def validate_email(email):
+    if not email:
+        return False, "Email is required"
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, email):
+        return False, "Invalid email format"
+    return True, None
+
+def validate_password(password):
+    if not password:
+        return False, "Password is required"
+    if len(password) < 6:
+        return False, "Password must be at least 6 characters"
+    if len(password) > 128:
+        return False, "Password must be less than 128 characters"
+    return True, None
+
 # User Registration
 @app.route("/api/auth/register", methods=["POST"])
+@limiter.limit("5 per minute")
 def register():
     data = request.get_json()
     
@@ -147,11 +197,18 @@ def register():
     email = data["email"].strip().lower()
     password = data["password"]
     
-    if not username or not email or not password:
-        return jsonify({"error": "All fields are required"}), 400
+    # Validate inputs
+    valid, error = validate_username(username)
+    if not valid:
+        return jsonify({"error": error}), 400
     
-    if len(password) < 6:
-        return jsonify({"error": "Password must be at least 6 characters"}), 400
+    valid, error = validate_email(email)
+    if not valid:
+        return jsonify({"error": error}), 400
+    
+    valid, error = validate_password(password)
+    if not valid:
+        return jsonify({"error": error}), 400
     
     conn = get_db()
     cursor = conn.cursor()
@@ -191,6 +248,7 @@ def register():
 
 # User Login
 @app.route("/api/auth/login", methods=["POST"])
+@limiter.limit("10 per minute")
 def login():
     data = request.get_json()
     
@@ -244,6 +302,7 @@ def login():
 # Get current user
 @app.route("/api/auth/me", methods=["GET"])
 @verify_token
+@limiter.limit("100 per hour")
 def get_current_user():
     conn = get_db()
     cursor = conn.cursor()
@@ -272,6 +331,7 @@ def get_tasks():
 # Add a new task (protected - user-specific)
 @app.route("/api/tasks", methods=["POST"])
 @verify_token
+@limiter.limit("50 per hour")
 def add_task():
     data = request.get_json()
     
@@ -301,6 +361,7 @@ def add_task():
 # Delete a task (protected - user-specific)
 @app.route("/api/tasks/<int:task_id>", methods=["DELETE"])
 @verify_token
+@limiter.limit("50 per hour")
 def delete_task(task_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -320,6 +381,7 @@ def delete_task(task_id):
 # Update task pomodoro count (protected - user-specific)
 @app.route("/api/tasks/<int:task_id>/pomodoro", methods=["POST"])
 @verify_token
+@limiter.limit("200 per hour")
 def increment_pomodoro(task_id):
     conn = get_db()
     cursor = conn.cursor()

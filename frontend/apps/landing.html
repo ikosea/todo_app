@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, private">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Last-Modified" content="0">
+    <meta name="cache-control" content="no-cache">
+    <meta name="expires" content="0">
+    <title>Productivity App</title>
+    
+    <!-- Custom Retro CSS -->
+    <script>
+        const cacheBuster = '?v=7&t=' + Date.now() + '&r=' + Math.random();
+        document.write('<link rel="stylesheet" href="../css/desktop.css' + cacheBuster + '">');
+        document.write('<link rel="stylesheet" href="../css/window.css' + cacheBuster + '">');
+        document.write('<link rel="stylesheet" href="../css/cursor.css' + cacheBuster + '">');
+        document.write('<link rel="stylesheet" href="../css/apps.css' + cacheBuster + '">');
+    </script>
+    <style>
+        .landing-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+            background: #c0c0c0;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+        }
+
+        .landing-logo {
+            width: 128px;
+            height: 128px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            border: 4px solid #000000;
+            box-shadow: 
+                inset 2px 2px 0px 0px #808080,
+                4px 4px 0px 0px #000000;
+        }
+
+        .landing-logo svg {
+            width: 96px;
+            height: 96px;
+        }
+
+        .landing-title {
+            font-family: 'Geneva', 'Chicago', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .landing-subtitle {
+            font-family: 'Geneva', 'Chicago', monospace;
+            font-size: 12px;
+            color: #808080;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .landing-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .landing-button {
+            font-family: 'Geneva', 'Chicago', monospace;
+            font-size: 14px;
+            padding: 12px 32px;
+            background: #c0c0c0;
+            border: 3px solid #000000;
+            color: #000000;
+            cursor: pointer;
+            box-shadow: 
+                inset -3px -3px 0px 0px #808080,
+                inset 3px 3px 0px 0px #ffffff,
+                3px 3px 0px 0px #000000;
+            text-transform: none;
+            font-weight: bold;
+            min-width: 140px;
+        }
+
+        .landing-button:hover {
+            background: #d0d0d0;
+        }
+
+        .landing-button:active {
+            box-shadow: 
+                inset 3px 3px 0px 0px #808080,
+                inset -3px -3px 0px 0px #ffffff;
+            transform: translate(2px, 2px);
+        }
+
+        .landing-button:focus {
+            outline: 2px dotted #000000;
+            outline-offset: 4px;
+        }
+    </style>
+</head>
+<body class="desktop-body">
+    <div class="landing-container">
+        <!-- Logo -->
+        <div class="landing-logo">
+            <svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+                <!-- Timer Icon -->
+                <!-- Outer circle -->
+                <circle cx="48" cy="48" r="40" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+                <!-- Inner circle -->
+                <circle cx="48" cy="48" r="32" fill="none" stroke="#000000" stroke-width="1"/>
+                <!-- Hour markers (12, 3, 6, 9) -->
+                <line x1="48" y1="8" x2="48" y2="16" stroke="#000000" stroke-width="2" stroke-linecap="square"/>
+                <line x1="88" y1="48" x2="80" y2="48" stroke="#000000" stroke-width="2" stroke-linecap="square"/>
+                <line x1="48" y1="88" x2="48" y2="80" stroke="#000000" stroke-width="2" stroke-linecap="square"/>
+                <line x1="8" y1="48" x2="16" y2="48" stroke="#000000" stroke-width="2" stroke-linecap="square"/>
+                <!-- Hour hand (pointing to 12) -->
+                <line x1="48" y1="48" x2="48" y2="24" stroke="#000000" stroke-width="3" stroke-linecap="square"/>
+                <!-- Minute hand (pointing to 12) -->
+                <line x1="48" y1="48" x2="48" y2="20" stroke="#000000" stroke-width="2" stroke-linecap="square"/>
+                <!-- Center dot -->
+                <circle cx="48" cy="48" r="3" fill="#000000"/>
+            </svg>
+        </div>
+
+        <!-- Title -->
+        <h1 class="landing-title">Productivity App</h1>
+        <p class="landing-subtitle">Focus • Tasks • Achievements</p>
+
+        <!-- Buttons -->
+        <div class="landing-buttons">
+            <button class="landing-button" id="signin-btn">Sign In</button>
+            <button class="landing-button" id="signup-btn">Sign Up</button>
+        </div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div id="custom-cursor" class="mac-cursor mac-cursor-normal">
+        <img id="cursor-svg" src="../assets/cursors/Normal Select.cur" alt="cursor" width="16" height="16">
+    </div>
+    
+    <script type="module">
+        // Force cache refresh for imports
+        const importCacheBuster = '?v=7&t=' + Date.now() + '&r=' + Math.random();
+        
+        // Landing page - just show logo, no auth checks
+        // Users click buttons to proceed to auth.html
+        
+        // Initialize cursor
+        function initCursor() {
+            const cursor = document.getElementById('custom-cursor');
+            if (!cursor) return;
+            
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = `${e.clientX}px`;
+                cursor.style.top = `${e.clientY}px`;
+            });
+        }
+        
+        // Setup button handlers
+        function setupButtons() {
+            const signinBtn = document.getElementById('signin-btn');
+            const signupBtn = document.getElementById('signup-btn');
+            
+            if (signinBtn) {
+                signinBtn.addEventListener('click', () => {
+                    window.location.href = 'auth.html?mode=signin';
+                });
+            }
+            
+            if (signupBtn) {
+                signupBtn.addEventListener('click', () => {
+                    window.location.href = 'auth.html?mode=signup';
+                });
+            }
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                initCursor();
+                setupButtons();
+            });
+        } else {
+            initCursor();
+            setupButtons();
+        }
+    </script>
+</body>
+</html>
+

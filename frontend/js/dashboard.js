@@ -15,6 +15,7 @@ export class Dashboard {
         await this.loadAndDisplayStats(windowElement);
         this.loadAndDisplayHistory(windowElement);
         this.loadAndDisplayDailySummary(windowElement);
+        this.loadAndDisplayContributionCalendar(windowElement);
         this.setupEventListeners(windowElement);
         this.setupNavigationLinks(windowElement);
         // Listen for task updates from other windows
@@ -26,6 +27,7 @@ export class Dashboard {
             Dashboard.loadAndDisplayStats(windowElement);
             Dashboard.loadAndDisplayHistory(windowElement);
             Dashboard.loadAndDisplayDailySummary(windowElement);
+            Dashboard.loadAndDisplayContributionCalendar(windowElement);
         });
     }
 
@@ -242,5 +244,204 @@ export class Dashboard {
             return `${hours} hr`;
         }
         return `${hours} hr ${mins} min`;
+    }
+
+    /**
+     * Load and display GitHub-style contribution calendar
+     */
+    static loadAndDisplayContributionCalendar(windowElement, selectedYear = null) {
+        const history = this.getSessionHistory();
+        const calendarContainer = windowElement.querySelector('#contribution-calendar');
+        const contributionCount = windowElement.querySelector('#contribution-count');
+        const yearSelector = windowElement.querySelector('#year-selector');
+        
+        if (!calendarContainer) return;
+
+        // Get available years from history
+        const availableYears = new Set();
+        history.forEach(entry => {
+            if (entry.date) {
+                const entryDate = new Date(entry.date);
+                availableYears.add(entryDate.getFullYear());
+            }
+        });
+        
+        // Always include current year
+        const currentYear = new Date().getFullYear();
+        availableYears.add(currentYear);
+        
+        // Sort years descending
+        const sortedYears = Array.from(availableYears).sort((a, b) => b - a);
+        
+        // Populate year selector
+        if (yearSelector) {
+            yearSelector.innerHTML = '';
+            sortedYears.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                option.selected = year === (selectedYear || currentYear);
+                yearSelector.appendChild(option);
+            });
+            
+            // Add event listener if not already added
+            if (!yearSelector.dataset.listenerAdded) {
+                yearSelector.addEventListener('change', (e) => {
+                    const year = parseInt(e.target.value);
+                    this.loadAndDisplayContributionCalendar(windowElement, year);
+                });
+                yearSelector.dataset.listenerAdded = 'true';
+            }
+        }
+
+        // Use selected year or current year
+        const displayYear = selectedYear || currentYear;
+        const startDate = new Date(displayYear, 0, 1); // January 1st
+        const endDate = new Date(displayYear, 11, 31); // December 31st
+        
+        // Create a map of date strings to contribution counts (pomodoros)
+        const contributionMap = new Map();
+        history.forEach(entry => {
+            if (entry.date && entry.pomodoros) {
+                const entryDate = new Date(entry.date);
+                // Only include entries from selected year
+                if (entryDate.getFullYear() === displayYear) {
+                    contributionMap.set(entry.date, (contributionMap.get(entry.date) || 0) + entry.pomodoros);
+                }
+            }
+        });
+
+        // Calculate total contributions
+        let totalContributions = 0;
+        contributionMap.forEach(count => {
+            totalContributions += count;
+        });
+
+        // Update contribution count
+        if (contributionCount) {
+            contributionCount.textContent = `${totalContributions} contributions in ${displayYear}`;
+        }
+
+        // Generate calendar grid
+        const calendar = this.generateContributionCalendar(startDate, endDate, contributionMap);
+        calendarContainer.innerHTML = calendar;
+    }
+
+    /**
+     * Generate GitHub-style contribution calendar HTML
+     * GitHub shows weeks as columns, days as rows
+     */
+    static generateContributionCalendar(startDate, endDate, contributionMap) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const daysOfWeek = ['Mon', 'Wed', 'Fri'];
+        
+        // Find the first Monday on or before startDate
+        const firstMonday = new Date(startDate);
+        const dayOfWeek = firstMonday.getDay();
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Monday = 0
+        firstMonday.setDate(firstMonday.getDate() - diff);
+
+        // Create array of all dates from first Monday to end
+        const dates = [];
+        const currentDate = new Date(firstMonday);
+        while (currentDate <= endDate) {
+            dates.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // Group dates into weeks (7 days each)
+        const weeks = [];
+        for (let i = 0; i < dates.length; i += 7) {
+            const week = dates.slice(i, i + 7);
+            // Ensure week has 7 days (pad if needed)
+            while (week.length < 7) {
+                const lastDate = new Date(week[week.length - 1]);
+                lastDate.setDate(lastDate.getDate() + 1);
+                week.push(lastDate);
+            }
+            weeks.push(week);
+        }
+
+        const numWeeks = weeks.length;
+
+        // Generate HTML
+        let html = '<div class="calendar-wrapper">';
+        
+        // Month labels row - use dynamic grid
+        html += `<div class="calendar-months" style="grid-template-columns: 24px repeat(${numWeeks}, 12px);">`;
+        html += '<div></div>'; // Empty cell for day labels column
+        let lastMonth = -1;
+        let lastMonthWeekIdx = -1;
+        weeks.forEach((week, weekIdx) => {
+            const firstDay = week[0];
+            const month = firstDay.getMonth();
+            // Only show month label if it's the first week of the month or if we skipped a month
+            // Also ensure labels don't overlap by spacing them at least 4 weeks apart
+            if (month !== lastMonth && (lastMonthWeekIdx === -1 || weekIdx - lastMonthWeekIdx >= 3)) {
+                html += `<div class="calendar-month-label" style="grid-column: ${weekIdx + 2};">${months[month]}</div>`;
+                lastMonth = month;
+                lastMonthWeekIdx = weekIdx;
+            }
+        });
+        html += '</div>';
+
+        // Calendar grid
+        html += '<div class="calendar-grid-container">';
+        
+        // Day labels column
+        html += '<div class="calendar-day-labels">';
+        daysOfWeek.forEach((day, idx) => {
+            const dayIndex = idx === 0 ? 0 : idx === 1 ? 2 : 4; // Mon=0, Wed=2, Fri=4
+            html += `<div class="calendar-day-label" style="grid-row: ${dayIndex + 1};">${day}</div>`;
+        });
+        html += '</div>';
+
+        // Calendar squares - weeks as columns, days as rows
+        html += `<div class="calendar-squares" style="grid-template-columns: repeat(${numWeeks}, 12px);">`;
+        for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+            weeks.forEach((week, weekIdx) => {
+                const date = week[dayOfWeek];
+                // Only show squares for dates within our range
+                if (date >= startDate && date <= endDate) {
+                    const dateStr = date.toISOString().split('T')[0];
+                    const contributionCount = contributionMap.get(dateStr) || 0;
+                    const level = this.getContributionLevel(contributionCount);
+                    const tooltip = contributionCount > 0 
+                        ? `${contributionCount} pomodoro${contributionCount > 1 ? 's' : ''} on ${this.formatCalendarDate(dateStr)}`
+                        : `No contributions on ${this.formatCalendarDate(dateStr)}`;
+                    
+                    html += `<div class="calendar-square" data-level="${level}" data-date="${dateStr}" title="${tooltip}" style="grid-column: ${weekIdx + 1}; grid-row: ${dayOfWeek + 1};"></div>`;
+                } else {
+                    // Empty square for dates outside range
+                    html += `<div class="calendar-square calendar-square-empty" style="grid-column: ${weekIdx + 1}; grid-row: ${dayOfWeek + 1};"></div>`;
+                }
+            });
+        }
+        html += '</div>';
+
+        html += '</div></div>';
+        return html;
+    }
+
+    /**
+     * Get contribution level (0-3) based on count
+     */
+    static getContributionLevel(count) {
+        if (count === 0) return 0;
+        if (count === 1) return 1;
+        if (count >= 2 && count <= 3) return 2;
+        return 3; // 4 or more
+    }
+
+    /**
+     * Format date for calendar tooltip
+     */
+    static formatCalendarDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            year: 'numeric'
+        });
     }
 }

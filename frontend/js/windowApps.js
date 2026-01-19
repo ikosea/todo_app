@@ -26,6 +26,8 @@ export class WindowApps {
                 return this.getDashboardContent();
             case 'auth':
                 return this.getAuthContent();
+            case 'trash':
+                return this.getTrashContent();
             default:
                 return '<div class="mac-content"><p>Unknown app</p></div>';
         }
@@ -166,6 +168,32 @@ export class WindowApps {
                     </div>
                 </section>
 
+                <!-- Contribution Calendar Section -->
+                <section class="contribution-section">
+                    <div class="contribution-header">
+                        <h2 class="section-title">Focus Streaks</h2>
+                        <div class="contribution-header-controls">
+                            <select id="year-selector" class="mac-select year-selector">
+                                <!-- Years will be populated dynamically -->
+                            </select>
+                            <div class="contribution-count" id="contribution-count">0 contributions</div>
+                        </div>
+                    </div>
+                    <div id="contribution-calendar" class="contribution-calendar">
+                        <!-- Calendar will be generated here -->
+                    </div>
+                    <div class="contribution-legend">
+                        <span class="legend-label">Less</span>
+                        <div class="legend-squares">
+                            <div class="legend-square" data-level="0"></div>
+                            <div class="legend-square" data-level="1"></div>
+                            <div class="legend-square" data-level="2"></div>
+                            <div class="legend-square" data-level="3"></div>
+                        </div>
+                        <span class="legend-label">More</span>
+                    </div>
+                </section>
+
                 <!-- Session History Section -->
                 <section class="history-section">
                     <h2 class="section-title">Session History</h2>
@@ -279,6 +307,11 @@ export class WindowApps {
                     Auth.init(windowElement);
                     console.log('Auth app initialized');
                     break;
+                case 'trash':
+                    console.log('Initializing Trash app...');
+                    await Trash.init(windowElement);
+                    console.log('Trash app initialized');
+                    break;
                 default:
                     console.warn('Unknown app type:', appType);
             }
@@ -286,6 +319,32 @@ export class WindowApps {
             console.error(`Error initializing ${appType} app:`, error);
             console.error('Error stack:', error.stack);
         }
+    }
+
+    /**
+     * Get Trash app content
+     */
+    static getTrashContent() {
+        return `
+            <div class="mac-content">
+                <h2 class="section-title">Trash</h2>
+                
+                <!-- Trash List -->
+                <ul id="trash-list" class="task-list">
+                    <!-- Deleted tasks will be dynamically added here -->
+                </ul>
+                
+                <!-- Empty State -->
+                <div id="trash-empty-state" class="empty-state" style="display:none;">
+                    <p>Trash is empty.</p>
+                </div>
+                
+                <!-- Actions -->
+                <div style="margin-top: 16px; text-align: center;">
+                    <button id="empty-trash-btn" class="mac-button">Empty Trash</button>
+                </div>
+            </div>
+        `;
     }
 }
 

@@ -4,6 +4,7 @@
 
 import { CONFIG } from './config.js';
 import { createErrorHandler } from './utils.js';
+import { OfflineManager } from './offline.js';
 
 // Get authentication token from localStorage
 function getAuthToken() {
@@ -20,13 +21,42 @@ function getAuthHeaders() {
     return headers;
 }
 
-// Create API request helper
+// Create API request helper with offline support
 async function apiRequest(endpoint, options = {}) {
     const url = `${CONFIG.API.BASE_URL}${endpoint}`;
     const config = {
         headers: getAuthHeaders(),
         ...options
     };
+    
+    // Check if offline
+    if (!navigator.onLine && options.method && options.method !== 'GET') {
+        // Queue operation for later sync
+        await OfflineManager.init();
+        const operationType = endpoint.includes('/tasks') && options.method === 'POST' ? 'addTask' : 
+                              endpoint.includes('/tasks') && options.method === 'DELETE' ? 'deleteTask' :
+                              endpoint.includes('/pomodoro') ? 'incrementPomodoro' : 'unknown';
+        let bodyData = options.body ? JSON.parse(options.body) : {};
+        // Extract task ID from endpoint if DELETE
+        if (operationType === 'deleteTask') {
+            const taskIdMatch = endpoint.match(/\/(\d+)$/);
+            if (taskIdMatch) {
+                bodyData = { id: parseInt(taskIdMatch[1]) };
+            }
+        }
+        // Extract task ID from endpoint if incrementPomodoro
+        if (operationType === 'incrementPomodoro') {
+            const taskIdMatch = endpoint.match(/\/(\d+)\/pomodoro/);
+            if (taskIdMatch) {
+                bodyData = { taskId: parseInt(taskIdMatch[1]) };
+            }
+        }
+        await OfflineManager.queueOperation({
+            type: operationType,
+            data: bodyData
+        });
+        throw new Error('Offline: Operation queued for sync');
+    }
     
     try {
         const response = await fetch(url, config);
@@ -72,30 +102,61 @@ async function apiRequest(endpoint, options = {}) {
 
 export const API = {
     /**
-     * Get all tasks from backend
+     * Get all tasks from backend (with offline fallback)
      * @returns {Promise<Array>} Array of tasks
      */
     async getTasks() {
         try {
             const data = await apiRequest(CONFIG.API.ENDPOINTS.TASKS);
-            return data.tasks || [];
+            const tasks = data.tasks || [];
+            // Save to IndexedDB for offline access
+            if (tasks.length > 0) {
+                await OfflineManager.init();
+                for (const task of tasks) {
+                    await OfflineManager.saveTask(task);
+                }
+            }
+            return tasks;
         } catch (error) {
+            // If offline, try to get from IndexedDB
+            if (!navigator.onLine) {
+                try {
+                    await OfflineManager.init();
+                    const tasks = await OfflineManager.getTasks();
+                    return tasks;
+                } catch (offlineError) {
+                    console.warn('Offline data fetch failed:', offlineError);
+                }
+            }
             return createErrorHandler('getTasks', [])(error);
         }
     },
 
     /**
-     * Add a new task to backend
+     * Add a new task to backend (with offline support)
      * @param {string} text - Task text
      * @returns {Promise<Object|null>} Created task or null
      */
     async addTask(text) {
         try {
-            return await apiRequest(CONFIG.API.ENDPOINTS.TASKS, {
+            const task = await apiRequest(CONFIG.API.ENDPOINTS.TASKS, {
                 method: 'POST',
-                body: JSON.stringify({text})
+                body: JSON.stringify({text: text})
             });
+            // Save to IndexedDB for offline access
+            if (task) {
+                await OfflineManager.init();
+                await OfflineManager.saveTask(task);
+            }
+            return task;
         } catch (error) {
+            // If offline, save locally and queue for sync
+            if (!navigator.onLine && error.message.includes('Offline')) {
+                await OfflineManager.init();
+                const tempTask = { id: Date.now(), name: text, pomodoro_count: 0, completed: false };
+                await OfflineManager.saveTask(tempTask);
+                return tempTask;
+            }
             return createErrorHandler('addTask', null)(error);
         }
     },
@@ -180,11 +241,12 @@ export const API = {
     },
 
     /**
-     * Logout (clear local storage and reload)
+     * Logout (clear local storage and redirect to landing)
      */
     logout() {
         localStorage.removeItem(CONFIG.STORAGE.AUTH_TOKEN);
         localStorage.removeItem(CONFIG.STORAGE.CURRENT_USER);
-        window.location.reload();
+        // Redirect to landing page (relative to frontend/desktop.html)
+        window.location.href = 'apps/landing.html';
     }
 };

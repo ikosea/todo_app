@@ -179,20 +179,9 @@ export class Todo {
 
         if (emptyState) emptyState.style.display = 'none';
 
-        // Separate completed and active tasks
-        const activeTasks = tasks.filter(t => !t.completed);
-        const completedTasks = tasks.filter(t => t.completed);
-
-        // Render active tasks first
-        activeTasks.forEach(task => {
+        // Render all tasks (no separation by completion since we removed checkboxes)
+        tasks.forEach(task => {
             const taskItem = Todo.createTaskElement(windowElement, task);
-            taskList.appendChild(taskItem);
-        });
-
-        // Render completed tasks at the bottom
-        completedTasks.forEach(task => {
-            const taskItem = Todo.createTaskElement(windowElement, task);
-            taskItem.classList.add('completed');
             taskList.appendChild(taskItem);
         });
     }

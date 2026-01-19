@@ -6,6 +6,7 @@
 import { WindowManager } from './windowManager.js';
 import { WindowApps } from './windowApps.js';
 import { CONFIG } from './config.js';
+import { API } from './api.js';
 import { delay, clamp } from './utils.js';
 
 class Desktop {
@@ -17,6 +18,29 @@ class Desktop {
         this.selectedIcon = null;
         this.windowManager = new WindowManager();
         this.init();
+        this.initOfflineSupport();
+    }
+
+    /**
+     * Initialize offline support
+     */
+    async initOfflineSupport() {
+        try {
+            const { OfflineManager } = await import('./offline.js');
+            await OfflineManager.init();
+            OfflineManager.setupListeners();
+            
+            // Sync when back online
+            window.addEventListener('onlineStatusChanged', async (e) => {
+                if (e.detail.online) {
+                    await OfflineManager.syncPending();
+                    // Refresh tasks
+                    window.dispatchEvent(new CustomEvent('tasksUpdated'));
+                }
+            });
+        } catch (error) {
+            console.warn('Offline support initialization failed:', error);
+        }
     }
 
     /**
@@ -25,6 +49,7 @@ class Desktop {
     init() {
         this.initCursor();
         this.initIcons();
+        this.initMenuBar();
         this.attachEventListeners();
     }
 
@@ -157,16 +182,7 @@ class Desktop {
             }
         });
 
-        // Handle window menu actions
-        document.addEventListener('click', (e) => {
-            if (e.target.id === 'show-desktop') {
-                this.windowManager.showDesktop();
-            } else if (e.target.id === 'close-all-windows') {
-                this.windowManager.windows.forEach(w => {
-                    this.windowManager.closeWindow(w.id);
-                });
-            }
-        });
+        // Menu actions are handled in initMenuBar() for better event handling
     }
 
     /**
@@ -179,6 +195,93 @@ class Desktop {
             icon.addEventListener('mousedown', (e) => this.handleIconMouseDown(e, icon));
             icon.addEventListener('mouseup', (e) => this.handleIconMouseUp(e, icon));
         });
+    }
+
+    /**
+     * Initialize menu bar dropdowns
+     */
+    initMenuBar() {
+        // File menu
+        const fileMenu = document.getElementById('desktop-file-menu');
+        if (fileMenu) {
+            fileMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                fileMenu.classList.toggle('active');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!fileMenu.contains(e.target)) {
+                    fileMenu.classList.remove('active');
+                }
+            });
+
+            // File menu handlers
+            const exportData = document.getElementById('export-data');
+            const importData = document.getElementById('import-data');
+
+            if (exportData) {
+                exportData.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.handleExportData();
+                    fileMenu.classList.remove('active');
+                });
+            }
+
+            if (importData) {
+                importData.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.handleImportData();
+                    fileMenu.classList.remove('active');
+                });
+            }
+        }
+
+        // Special menu
+        const specialMenu = document.getElementById('desktop-special-menu');
+        if (specialMenu) {
+            specialMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                specialMenu.classList.toggle('active');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!specialMenu.contains(e.target)) {
+                    specialMenu.classList.remove('active');
+                }
+            });
+
+            // Setup dropdown item click handlers
+            const showDesktop = document.getElementById('show-desktop');
+            const closeAllWindows = document.getElementById('close-all-windows');
+            const logoutBtn = document.getElementById('logout');
+
+            if (showDesktop) {
+                showDesktop.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.windowManager.showDesktop();
+                    specialMenu.classList.remove('active');
+                });
+            }
+
+            if (closeAllWindows) {
+                closeAllWindows.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.windowManager.windows.forEach(w => {
+                        this.windowManager.closeWindow(w.id);
+                    });
+                    specialMenu.classList.remove('active');
+                });
+            }
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.handleLogout();
+                    specialMenu.classList.remove('active');
+                });
+            }
+        }
     }
 
     /**
@@ -324,6 +427,110 @@ class Desktop {
      */
     handleIconMouseUp(e, icon) {
         icon.classList.remove('pressed');
+    }
+
+    /**
+     * Handle export data
+     */
+    async handleExportData() {
+        try {
+            const tasks = await API.getTasks();
+            const sessionHistory = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
+            const user = JSON.parse(localStorage.getItem(CONFIG.STORAGE.CURRENT_USER) || '{}');
+            
+            const exportData = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                user: {
+                    username: user.username,
+                    email: user.email
+                },
+                tasks: tasks,
+                sessionHistory: sessionHistory,
+                settings: {
+                    selectedTask: localStorage.getItem(CONFIG.STORAGE.SELECTED_TASK)
+                }
+            };
+
+            // Create and download JSON file
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `productivity-app-export-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            alert('Data exported successfully!');
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Failed to export data: ' + error.message);
+        }
+    }
+
+    /**
+     * Handle import data
+     */
+    async handleImportData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const text = await file.text();
+                const importData = JSON.parse(text);
+
+                if (!importData.tasks || !importData.sessionHistory) {
+                    throw new Error('Invalid export file format');
+                }
+
+                if (!confirm('Importing data will replace your current tasks and session history. Continue?')) {
+                    return;
+                }
+
+                // Import tasks
+                for (const task of importData.tasks) {
+                    try {
+                        await API.addTask(task.text || task.name);
+                    } catch (error) {
+                        console.warn('Failed to import task:', task, error);
+                    }
+                }
+
+                // Import session history
+                localStorage.setItem('sessionHistory', JSON.stringify(importData.sessionHistory));
+
+                // Import settings
+                if (importData.settings?.selectedTask) {
+                    localStorage.setItem(CONFIG.STORAGE.SELECTED_TASK, importData.settings.selectedTask);
+                }
+
+                alert('Data imported successfully! Please refresh the page.');
+                window.location.reload();
+            } catch (error) {
+                console.error('Import error:', error);
+                alert('Failed to import data: ' + error.message);
+            }
+        };
+
+        input.click();
+    }
+
+    /**
+     * Handle logout
+     */
+    handleLogout() {
+        if (confirm('Are you sure you want to log out?')) {
+            // API.logout() will handle the redirect
+            API.logout();
+        }
     }
 }
 

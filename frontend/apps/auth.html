@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, private">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta name="cache-control" content="no-cache">
+    <meta name="expires" content="0">
     <title>Authentication</title>
     
     <!-- Custom Retro CSS -->
     <script>
-        const cacheBuster = '?v=4&t=' + Date.now();
+        const cacheBuster = '?v=7&t=' + Date.now() + '&r=' + Math.random();
         document.write('<link rel="stylesheet" href="../css/desktop.css' + cacheBuster + '">');
         document.write('<link rel="stylesheet" href="../css/window.css' + cacheBuster + '">');
         document.write('<link rel="stylesheet" href="../css/cursor.css' + cacheBuster + '">');
@@ -138,19 +140,33 @@
     
     <script type="module">
         // Force cache refresh for imports
-        const importCacheBuster = '?v=4&t=' + Date.now();
+        const importCacheBuster = '?v=7&t=' + Date.now() + '&r=' + Math.random();
         
-        // Check if already authenticated and redirect to desktop
-        async function checkAuthAndRedirect() {
+        // Check URL parameter for mode (signin or signup)
+        function getModeFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('mode') || 'signin';
+        }
+
+        // Check authentication status (but don't auto-redirect - let user stay on auth page)
+        async function checkAuthStatus() {
             const { CONFIG } = await import('../js/config.js' + importCacheBuster);
             const token = localStorage.getItem(CONFIG.STORAGE.AUTH_TOKEN);
             
+            // Get mode from URL
+            const mode = getModeFromURL();
+            const windowElement = document.querySelector('.mac-window');
+            
             if (!token) {
-                // No token, stay on auth page
+                // No token, set mode from URL and stay on auth page
+                if (windowElement) {
+                    const { Auth } = await import('../js/auth.js' + importCacheBuster);
+                    Auth.updateUI(windowElement, mode);
+                }
                 return;
             }
             
-            // Verify token with backend
+            // Verify token with backend (but don't redirect - let user see auth page)
             try {
                 const response = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.AUTH.ME}`, {
                     headers: {
@@ -158,17 +174,23 @@
                     }
                 });
                 
-                if (response.ok) {
-                    // Already authenticated, redirect to desktop
-                    window.location.href = '../desktop.html';
-                } else {
-                    // Token invalid, clear it and stay on auth page
+                if (!response.ok) {
+                    // Token invalid, clear it and set mode from URL
                     localStorage.removeItem(CONFIG.STORAGE.AUTH_TOKEN);
                     localStorage.removeItem(CONFIG.STORAGE.CURRENT_USER);
                 }
+                // Set mode from URL regardless of token status
+                if (windowElement) {
+                    const { Auth } = await import('../js/auth.js' + importCacheBuster);
+                    Auth.updateUI(windowElement, mode);
+                }
             } catch (error) {
-                // Connection error - stay on auth page
+                // Connection error - set mode from URL and stay on auth page
                 console.warn('Auth check failed:', error);
+                if (windowElement) {
+                    const { Auth } = await import('../js/auth.js' + importCacheBuster);
+                    Auth.updateUI(windowElement, mode);
+                }
             }
         }
         
@@ -236,7 +258,7 @@
         // Initialize when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', async () => {
-                checkAuthAndRedirect();
+                await checkAuthStatus();
                 initCursor();
                 initMenu();
                 
@@ -246,32 +268,33 @@
                     Auth.init(windowElement);
                 }
                 
-                // Close button handler
+                // Close button handler - redirect to landing page
                 const closeBtn = document.getElementById('auth-close-btn');
                 if (closeBtn) {
                     closeBtn.addEventListener('click', () => {
-                        // Don't allow closing - user must authenticate
-                        alert('Please sign in or sign up to continue.');
+                        window.location.href = 'landing.html';
                     });
                 }
             });
         } else {
-            checkAuthAndRedirect();
-            initCursor();
-            initMenu();
-            
-            const windowElement = document.querySelector('.mac-window');
-            if (windowElement) {
-                const { Auth } = await import('../js/auth.js' + importCacheBuster);
-                Auth.init(windowElement);
-            }
-            
-            const closeBtn = document.getElementById('auth-close-btn');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    alert('Please sign in or sign up to continue.');
-                });
-            }
+            (async () => {
+                await checkAuthStatus();
+                initCursor();
+                initMenu();
+                
+                const windowElement = document.querySelector('.mac-window');
+                if (windowElement) {
+                    const { Auth } = await import('../js/auth.js' + importCacheBuster);
+                    Auth.init(windowElement);
+                }
+                
+                const closeBtn = document.getElementById('auth-close-btn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        window.location.href = 'landing.html';
+                    });
+                }
+            })();
         }
     </script>
 </body>
