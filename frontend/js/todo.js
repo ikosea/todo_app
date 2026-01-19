@@ -120,29 +120,44 @@ export class Todo {
     }
 
     /**
-     * Delete a task with confirmation
+     * Move a task to trash
      */
     static async deleteTask(windowElement, taskId) {
-        if (confirm('Are you sure you want to delete this task?')) {
+        if (confirm('Move this task to trash?')) {
             try {
-                await API.deleteTask(taskId);
-                await Todo.loadTasks(windowElement);
-                // Notify other windows that tasks have changed
-                window.dispatchEvent(new CustomEvent('tasksUpdated'));
+                // Get the task first
+                const tasks = await API.getTasks();
+                const task = tasks.find(t => t.id === taskId);
+                
+                if (task) {
+                    // Add to trash in localStorage
+                    const trash = Todo.getTrash();
+                    trash.push({
+                        ...task,
+                        deletedAt: new Date().toISOString()
+                    });
+                    localStorage.setItem('trash', JSON.stringify(trash));
+                    
+                    // Delete from backend
+                    await API.deleteTask(taskId);
+                    await Todo.loadTasks(windowElement);
+                    // Notify other windows that tasks have changed
+                    window.dispatchEvent(new CustomEvent('tasksUpdated'));
+                    window.dispatchEvent(new CustomEvent('trashUpdated'));
+                }
             } catch (error) {
-                console.error('Error deleting task:', error);
-                alert('Failed to delete task. Please try again.');
+                console.error('Error moving task to trash:', error);
+                alert('Failed to move task to trash. Please try again.');
             }
         }
     }
 
     /**
-     * Toggle task completion
+     * Get trash items from localStorage
      */
-    static async toggleTaskCompletion(windowElement, taskId) {
-        // Note: Backend doesn't have update endpoint yet, so we'll skip this for now
-        // This would require a PUT endpoint on the backend
-        console.log('Toggle completion not yet implemented - requires backend update endpoint');
+    static getTrash() {
+        const trashStr = localStorage.getItem('trash');
+        return trashStr ? JSON.parse(trashStr) : [];
     }
 
     /**
@@ -189,12 +204,6 @@ export class Todo {
         const li = document.createElement('li');
         li.className = 'task-item';
 
-        // Task checkbox
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = task.completed || false;
-        checkbox.addEventListener('change', () => Todo.toggleTaskCompletion(windowElement, task.id));
-
         // Task text
         const textSpan = document.createElement('span');
         textSpan.className = 'task-text';
@@ -210,14 +219,13 @@ export class Todo {
 
         infoDiv.appendChild(pomodoroSpan);
 
-        // Delete button
+        // Delete button (moves to trash)
         const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'task-delete-btn';
+        deleteBtn.className = 'task-delete-btn mac-button';
         deleteBtn.textContent = 'Delete';
         deleteBtn.addEventListener('click', () => Todo.deleteTask(windowElement, task.id));
 
         // Assemble task item
-        li.appendChild(checkbox);
         li.appendChild(textSpan);
         li.appendChild(infoDiv);
         li.appendChild(deleteBtn);

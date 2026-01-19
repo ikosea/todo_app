@@ -7,6 +7,7 @@ import { Auth } from './auth.js';
 import { Todo } from './todo.js';
 import { Pomodoro } from './pomodoro.js';
 import { Dashboard } from './dashboard.js';
+import { Trash } from './trash.js';
 import { CONFIG } from './config.js';
 
 export class WindowApps {
