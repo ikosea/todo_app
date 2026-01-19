@@ -55,10 +55,17 @@ async function apiRequest(endpoint, options = {}) {
         }
         return null;
     } catch (error) {
-        // Re-throw with more context for connection errors
-        if (error instanceof TypeError && error.message.includes('fetch')) {
-            throw new Error('Connection error. Make sure backend is running on http://localhost:5000');
+        // Check for specific network/CORS errors
+        if (error instanceof TypeError) {
+            // Network error (backend not running, CORS issue, etc.)
+            if (error.message.includes('fetch') || 
+                error.message.includes('Failed to fetch') ||
+                error.message.includes('NetworkError') ||
+                error.message.includes('Load failed')) {
+                throw new Error('Connection error. Make sure backend is running on http://localhost:5000 and CORS is enabled');
+            }
         }
+        // Re-throw other errors as-is
         throw error;
     }
 }
@@ -173,12 +180,11 @@ export const API = {
     },
 
     /**
-     * Logout (clear local storage)
+     * Logout (clear local storage and reload)
      */
     logout() {
         localStorage.removeItem(CONFIG.STORAGE.AUTH_TOKEN);
         localStorage.removeItem(CONFIG.STORAGE.CURRENT_USER);
-        window.location.href = 'auth.html';
+        window.location.reload();
     }
 };
-

@@ -4,13 +4,19 @@
  */
 
 import { API } from './api.js';
+import { CONFIG } from './config.js';
+import { safeJsonParse } from './utils.js';
 
 export const AuthCheck = {
     /**
      * Check if user is authenticated
      */
+    /**
+     * Check if user is authenticated
+     * @returns {boolean} True if authenticated
+     */
     isAuthenticated() {
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem(CONFIG.STORAGE.AUTH_TOKEN);
         return token !== null && token !== undefined;
     },
 
@@ -45,16 +51,13 @@ export const AuthCheck = {
     /**
      * Get current user from localStorage
      */
+    /**
+     * Get current user from localStorage
+     * @returns {Object|null} User object or null
+     */
     getCurrentUser() {
-        const userStr = localStorage.getItem('currentUser');
-        if (userStr) {
-            try {
-                return JSON.parse(userStr);
-            } catch (e) {
-                return null;
-            }
-        }
-        return null;
+        const userStr = localStorage.getItem(CONFIG.STORAGE.CURRENT_USER);
+        return safeJsonParse(userStr, null);
     }
 };
 

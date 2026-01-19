@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productivity Dashboard</title>
+    
+    <!-- Custom Retro CSS -->
+    <link rel="stylesheet" href="retro.css">
+</head>
+<body class="desktop-body">
+    <main class="flex items-center justify-center min-h-screen p-4">
+        <!-- Mac-style Window -->
+        <section class="mac-window">
+            <!-- Window Title Bar -->
+            <header class="mac-titlebar">
+                <div class="mac-titlebar-controls">
+                    <span class="mac-close"></span>
+                    <span class="mac-minimize"></span>
+                    <span class="mac-maximize"></span>
+                </div>
+                <h1 class="mac-title">Productivity Dashboard</h1>
+            </header>
+            
+            <!-- Window Content -->
+            <div class="mac-content">
+                <!-- Navigation -->
+                <nav class="page-nav">
+                    <a href="pomodoro.html" class="nav-link">Pomodoro Timer</a>
+                    <span class="nav-separator">|</span>
+                    <a href="todo.html" class="nav-link">Tasks</a>
+                </nav>
+
+                <!-- Statistics Section -->
+                <section class="dashboard-section">
+                    <h2 class="section-title">Statistics</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-pomodoros">0</div>
+                            <div class="stat-label">Total Pomodoros</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-focus-time">0 min</div>
+                            <div class="stat-label">Total Focus Time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-break-time">0 min</div>
+                            <div class="stat-label">Total Break Time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="tasks-completed">0</div>
+                            <div class="stat-label">Tasks Completed</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Session History Section -->
+                <section class="history-section">
+                    <h2 class="section-title">Session History</h2>
+                    <div id="session-history" class="session-history">
+                        <!-- History items will be dynamically added here -->
+                    </div>
+                    <div id="empty-history" class="empty-state">
+                        <p>No sessions yet. Start a Pomodoro timer to see your progress!</p>
+                    </div>
+                </section>
+
+                <!-- Daily Summary Section -->
+                <section class="daily-summary-section">
+                    <h2 class="section-title">Daily Summary</h2>
+                    <div id="daily-summary" class="daily-summary">
+                        <!-- Daily summaries will be dynamically added here -->
+                    </div>
+                    <div id="empty-daily" class="empty-state">
+                        <p>No daily data yet.</p>
+                    </div>
+                </section>
+
+                <!-- Reset Button -->
+                <div class="dashboard-actions">
+                    <button id="reset-stats-btn" class="mac-button mac-button-danger">Reset Statistics</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script type="module" src="js/dashboard-page.js"></script>
+</body>
+</html>
+

@@ -2,14 +2,12 @@
  * Timer Module - Handles Pomodoro timer logic and state
  */
 
-export const Timer = {
-    // Constants
-    WORK_DURATION: 25,
-    SHORT_BREAK_DURATION: 5,
-    LONG_BREAK_DURATION: 15,
+import { CONFIG } from './config.js';
+import { formatTime, clamp } from './utils.js';
 
+export const Timer = {
     // State
-    timerSeconds: 25 * 60,
+    timerSeconds: CONFIG.TIMER.WORK_DURATION * 60,
     timerInterval: null,
     isRunning: false,
     currentSession: "work",
@@ -30,12 +28,16 @@ export const Timer = {
 
     /**
      * Get duration for session type
+     * @param {string} type - Session type ('work', 'short', 'long')
+     * @returns {number} Duration in minutes
      */
     getSessionDuration(type) {
-        if (type === "work") return this.WORK_DURATION;
-        if (type === "short") return this.SHORT_BREAK_DURATION;
-        if (type === "long") return this.LONG_BREAK_DURATION;
-        return this.WORK_DURATION;
+        const durations = {
+            "work": CONFIG.TIMER.WORK_DURATION,
+            "short": CONFIG.TIMER.SHORT_BREAK_DURATION,
+            "long": CONFIG.TIMER.LONG_BREAK_DURATION
+        };
+        return durations[type] || CONFIG.TIMER.WORK_DURATION;
     },
 
     /**
@@ -113,13 +115,13 @@ export const Timer = {
             this.pomodoroCount++;
             this.sessionsCompleted++;
             
-            // Reset after 4 pomodoros
-            if (this.sessionsCompleted % 4 === 0) {
+            // Reset after configured number of pomodoros
+            if (this.sessionsCompleted % CONFIG.TIMER.POMODOROS_PER_LONG_BREAK === 0) {
                 this.pomodoroCount = 0;
             }
             
             // Switch to break
-            this.currentSession = (this.sessionsCompleted % 4 === 0) ? "long" : "short";
+            this.currentSession = (this.sessionsCompleted % CONFIG.TIMER.POMODOROS_PER_LONG_BREAK === 0) ? "long" : "short";
         } else {
             // Switch back to work
             this.currentSession = "work";
@@ -133,20 +135,20 @@ export const Timer = {
 
     /**
      * Get formatted time string (MM:SS)
+     * @returns {string} Formatted time
      */
     getFormattedTime() {
-        const minutes = Math.floor(this.timerSeconds / 60);
-        const seconds = this.timerSeconds % 60;
-        return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+        return formatTime(this.timerSeconds);
     },
 
     /**
      * Get progress percentage
+     * @returns {number} Progress percentage (0-100)
      */
     getProgress() {
         const duration = this.getSessionDuration(this.currentSession) * 60;
         const elapsed = duration - this.timerSeconds;
-        return Math.max(0, Math.min(100, (elapsed / duration) * 100));
+        return clamp((elapsed / duration) * 100, 0, 100);
     },
 
     /**

@@ -7,13 +7,41 @@ import jwt
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
-CORS(app)
+# Configure CORS to allow all origins for all routes
+CORS(app, origins="*", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
+     allow_headers=["Content-Type", "Authorization"])
 
 # Secret key for JWT (in production, use environment variable)
 app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
 
+# Ensure CORS headers are added to all responses
+@app.after_request
+def after_request(response):
+    # Only add if not already set by flask-cors to avoid duplicates
+    if 'Access-Control-Allow-Origin' not in response.headers:
+        response.headers.add('Access-Control-Allow-Origin', '*')
+    if 'Access-Control-Allow-Headers' not in response.headers:
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    if 'Access-Control-Allow-Methods' not in response.headers:
+        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    return response
+
+# Global error handler to ensure CORS headers on errors
+@app.errorhandler(Exception)
+def handle_error(e):
+    from flask import make_response
+    import traceback
+    print(f"Error: {str(e)}")
+    print(traceback.format_exc())
+    response = make_response(jsonify({"error": str(e)}), 500)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    return response
+
 # Authentication middleware
 def verify_token(f):
+    from flask import make_response
     def wrapper(*args, **kwargs):
         token = None
         auth_header = request.headers.get('Authorization')
@@ -22,19 +50,27 @@ def verify_token(f):
             try:
                 token = auth_header.split(' ')[1]  # Bearer <token>
             except:
-                return jsonify({"error": "Invalid token format"}), 401
+                response = make_response(jsonify({"error": "Invalid token format"}), 401)
+                response.headers.add('Access-Control-Allow-Origin', '*')
+                return response
         
         if not token:
-            return jsonify({"error": "Authentication required"}), 401
+            response = make_response(jsonify({"error": "Authentication required"}), 401)
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response
         
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
             request.current_user_id = data['user_id']
             request.current_username = data['username']
         except jwt.ExpiredSignatureError:
-            return jsonify({"error": "Token expired"}), 401
+            response = make_response(jsonify({"error": "Token expired"}), 401)
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response
         except jwt.InvalidTokenError:
-            return jsonify({"error": "Invalid token"}), 401
+            response = make_response(jsonify({"error": "Invalid token"}), 401)
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response
         
         return f(*args, **kwargs)
     wrapper.__name__ = f.__name__
@@ -70,6 +106,17 @@ def init_db():
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
+    
+    # Migration: Add user_id column if it doesn't exist (for existing databases)
+    try:
+        cursor.execute("SELECT user_id FROM tasks LIMIT 1")
+    except sqlite3.OperationalError:
+        # Column doesn't exist, add it
+        print("Migrating database: Adding user_id column to tasks table...")
+        cursor.execute("ALTER TABLE tasks ADD COLUMN user_id INTEGER")
+        # Set existing tasks to user_id = 1 (or NULL if you prefer)
+        cursor.execute("UPDATE tasks SET user_id = 1 WHERE user_id IS NULL")
+        print("Migration complete!")
     
     conn.commit()
     conn.close()
@@ -216,16 +263,6 @@ def get_tasks():
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM tasks WHERE user_id = ?", (request.current_user_id,))
-    rows = cursor.fetchall()
-    conn.close()
-    
-    tasks = [dict(row) for row in rows]
-    return jsonify({"tasks": tasks})
-@app.route("/api/tasks", methods=["GET"])
-def get_tasks():
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM tasks")
     rows = cursor.fetchall()
     conn.close()
     

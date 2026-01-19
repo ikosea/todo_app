@@ -3,81 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Productivity App - Home</title>
-    <script>
-        // Redirect to desktop
-        window.location.href = 'desktop.html';
-    </script>
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'mac-gray': '#c0c0c0',
-                        'mac-dark-gray': '#808080',
-                        'mac-light-gray': '#e0e0e0',
-                        'mac-white': '#ffffff',
-                        'mac-black': '#000000',
-                    },
-                    fontFamily: {
-                        'chicago': ['Chicago', 'Geneva', 'monospace'],
-                        'geneva': ['Geneva', 'monospace'],
-                    },
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Last-Modified" content="0">
+    <title>Productivity App</title>
+    <script type="module">
+        // Force cache refresh for imports
+        const importCacheBuster = '?v=4&t=' + Date.now();
+        
+        // Always redirect to auth first - let auth page handle redirect to desktop if already authenticated
+        async function redirectToAuth() {
+            const { CONFIG } = await import('./frontend/js/config.js' + importCacheBuster);
+            const token = localStorage.getItem(CONFIG.STORAGE.AUTH_TOKEN);
+            
+            // If no token, go to auth
+            if (!token) {
+                window.location.href = 'frontend/apps/auth.html';
+                return;
+            }
+            
+            // If token exists, verify it
+            try {
+                const response = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.AUTH.ME}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    // Already authenticated, go directly to desktop
+                    window.location.href = 'frontend/desktop.html';
+                } else {
+                    // Token invalid, clear and go to auth
+                    localStorage.removeItem(CONFIG.STORAGE.AUTH_TOKEN);
+                    localStorage.removeItem(CONFIG.STORAGE.CURRENT_USER);
+                    window.location.href = 'frontend/apps/auth.html';
+                }
+            } catch (error) {
+                // Connection error - if token exists, try desktop (might be offline)
+                // Otherwise go to auth
+                if (token) {
+                    window.location.href = 'frontend/desktop.html';
+                } else {
+                    window.location.href = 'frontend/apps/auth.html';
                 }
             }
         }
+        
+        redirectToAuth();
     </script>
-    
-    <!-- Custom Retro CSS -->
-    <link rel="stylesheet" href="retro.css">
 </head>
-<body class="bg-mac-gray font-geneva">
-    <main class="flex items-center justify-center min-h-screen p-4">
-        <!-- Mac-style Window -->
-        <section class="mac-window">
-            <!-- Window Title Bar -->
-            <header class="mac-titlebar">
-                <div class="mac-titlebar-controls">
-                    <span class="mac-close"></span>
-                    <span class="mac-minimize"></span>
-                    <span class="mac-maximize"></span>
-                </div>
-                <h1 class="mac-title">Productivity App</h1>
-            </header>
-            
-            <!-- Window Content -->
-            <div class="mac-content">
-                <section class="landing-section">
-                    <h2 class="section-title">Welcome</h2>
-                    
-                    <div class="landing-content">
-                        <p class="landing-text">
-                            Stay focused and organized with this classic productivity app.
-                        </p>
-                        
-                        <nav class="landing-nav">
-                            <a href="auth.html" class="nav-button">
-                                <span class="nav-icon">🔐</span>
-                                <span class="nav-label">Sign In / Sign Up</span>
-                            </a>
-                            
-                            <a href="pomodoro.html" class="nav-button">
-                                <span class="nav-icon">⏱️</span>
-                                <span class="nav-label">Pomodoro Timer</span>
-                            </a>
-                            
-                            <a href="todo.html" class="nav-button">
-                                <span class="nav-icon">✓</span>
-                                <span class="nav-label">Todo & Dashboard</span>
-                            </a>
-                        </nav>
-                    </div>
-                </section>
-            </div>
-        </section>
-    </main>
+<body>
+    <div style="text-align: center; padding: 50px; font-family: monospace;">
+        <p>Loading...</p>
+    </div>
 </body>
 </html>

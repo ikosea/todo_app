@@ -1,13 +1,11 @@
 /**
  * Desktop Module - Handles desktop environment
- * Phase 1: Desktop Foundation
- * Phase 2: Custom Cursor
- * Phase 3: Desktop Icons
- * Phase 4: Window System
- * Phase 5: App Integration
+ * Manages desktop UI, windows, icons, cursor, and window interactions
  */
 
 import { WindowApps } from './window-apps.js';
+import { CONFIG } from './config.js';
+import { delay, clamp } from './utils.js';
 
 class Desktop {
     constructor() {
@@ -17,7 +15,9 @@ class Desktop {
         this.cursorState = 'normal';
         this.selectedIcon = null;
         this.windows = [];
-        this.windowZIndex = 101;
+        this.windowZIndex = CONFIG.WINDOW.INITIAL_Z_INDEX;
+        this.activeWindowId = null; // Track active window
+        this.minimizedWindows = []; // Track minimized windows
         this.init();
     }
 
@@ -28,7 +28,6 @@ class Desktop {
         this.initCursor();
         this.initIcons();
         this.attachEventListeners();
-        console.log('Desktop initialized');
     }
 
     /**
@@ -41,19 +40,85 @@ class Desktop {
             return;
         }
 
+        // Ensure cursor is visible and positioned
+        this.cursor.style.display = 'block';
+        this.cursor.style.visibility = 'visible';
+        this.cursor.style.opacity = '1';
+        this.cursor.style.position = 'fixed';
+        this.cursor.style.pointerEvents = 'none';
+        this.cursor.style.zIndex = '10000';
+        this.cursor.style.left = '0';
+        this.cursor.style.top = '0';
+        this.cursor.style.margin = '0';
+        this.cursor.style.padding = '0';
+
         // Set initial cursor position (center of screen)
         this.cursorX = window.innerWidth / 2;
         this.cursorY = window.innerHeight / 2;
         this.updateCursorPosition();
+        
+        // Force initial update with multiple attempts
+        requestAnimationFrame(() => {
+            this.updateCursorPosition();
+            setTimeout(() => {
+                this.updateCursorPosition();
+            }, 10);
+        });
+        
+        console.log('Cursor initialized at:', this.cursorX, this.cursorY);
+        console.log('Cursor element:', this.cursor);
+        console.log('Cursor styles:', {
+            display: this.cursor.style.display,
+            visibility: this.cursor.style.visibility,
+            position: this.cursor.style.position,
+            left: this.cursor.style.left,
+            top: this.cursor.style.top
+        });
     }
 
     /**
      * Update cursor position
      */
     updateCursorPosition() {
-        if (!this.cursor) return;
-        this.cursor.style.left = `${this.cursorX}px`;
-        this.cursor.style.top = `${this.cursorY}px`;
+        if (!this.cursor) {
+            // Try to re-initialize cursor if it's missing
+            this.cursor = document.getElementById('custom-cursor');
+            if (!this.cursor) return;
+        }
+        
+        // Calculate offset based on cursor state
+        let offsetX = -2;
+        let offsetY = -2;
+        
+        if (this.cursorState === 'text') {
+            // Text cursor (I-beam) is centered horizontally, aligned to top
+            offsetX = -1; // Center the 2px wide I-beam
+            offsetY = 0;
+        } else if (this.cursorState === 'pointer') {
+            offsetX = -2;
+            offsetY = -2;
+        }
+        
+        // Use left/top positioning for more reliable updates
+        const x = this.cursorX + offsetX;
+        const y = this.cursorY + offsetY;
+        
+        // For text cursor, use transform to center it properly
+        if (this.cursorState === 'text') {
+            this.cursor.style.left = `${this.cursorX}px`;
+            this.cursor.style.top = `${this.cursorY}px`;
+            this.cursor.style.transform = 'translate(-1px, 0)';
+        } else {
+            // For other cursors, use left/top directly
+            this.cursor.style.left = `${x}px`;
+            this.cursor.style.top = `${y}px`;
+            this.cursor.style.transform = 'none';
+        }
+        
+        this.cursor.style.display = 'block';
+        this.cursor.style.visibility = 'visible';
+        this.cursor.style.opacity = '1';
+        this.cursor.classList.remove('hidden');
     }
 
     /**
@@ -67,17 +132,8 @@ class Desktop {
         
         // Update cursor SVG source
         const cursorSvg = document.getElementById('cursor-svg');
-        if (cursorSvg) {
-            const cursorMap = {
-                'normal': 'cursors/Normal Select.cur',
-                'pointer': 'cursors/Link Select.cur',
-                'help': 'cursors/Help Select.cur',
-                'busy': 'cursors/Busy.cur'
-            };
-            
-            if (cursorMap[newState]) {
-                cursorSvg.src = cursorMap[newState];
-            }
+        if (cursorSvg && CONFIG.CURSOR_PATHS[newState]) {
+            cursorSvg.src = CONFIG.CURSOR_PATHS[newState];
         }
     }
 
@@ -85,8 +141,25 @@ class Desktop {
      * Handle mouse movement
      */
     handleMouseMove(e) {
+        // Update cursor position immediately
         this.cursorX = e.clientX;
         this.cursorY = e.clientY;
+        
+        // Ensure cursor exists and is visible
+        if (!this.cursor) {
+            this.cursor = document.getElementById('custom-cursor');
+            if (!this.cursor) {
+                console.warn('Cursor element not found in handleMouseMove');
+                return;
+            }
+        }
+        
+        // Ensure cursor is visible
+        this.cursor.style.display = 'block';
+        this.cursor.style.visibility = 'visible';
+        this.cursor.style.opacity = '1';
+        this.cursor.classList.remove('hidden');
+        
         this.updateCursorPosition();
 
         // Update cursor state based on hover target
@@ -141,19 +214,22 @@ class Desktop {
      * Check if user is authenticated
      */
     async checkAuthentication() {
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem(CONFIG.STORAGE.AUTH_TOKEN);
         if (!token) {
             return false;
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/me', {
+            const response = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.AUTH.ME}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
             return response.ok;
         } catch (error) {
+            // Silently fail - don't show connection errors during auth check
+            // This is called on page load and shouldn't spam errors
+            console.debug('Auth check failed:', error);
             return false;
         }
     }
@@ -320,20 +396,14 @@ class Desktop {
         const window = document.createElement('div');
         window.id = id;
         window.className = 'desktop-window';
-        window.style.left = '100px';
-        window.style.top = '100px';
+        window.style.left = `${CONFIG.WINDOW.DEFAULT_X}px`;
+        window.style.top = `${CONFIG.WINDOW.DEFAULT_Y}px`;
+        window.style.width = `${CONFIG.WINDOW.DEFAULT_WIDTH}px`;
+        window.style.height = `${CONFIG.WINDOW.DEFAULT_HEIGHT}px`;
         window.style.zIndex = this.windowZIndex++;
 
         // Window title based on app type
-        const titles = {
-            'productivity': 'Productivity App',
-            'todo': 'Todo & Dashboard',
-            'pomodoro': 'Pomodoro Timer',
-            'auth': 'Authentication',
-            'folder': 'Folder',
-            'trash': 'Trash'
-        };
-        const title = titles[appType] || 'Window';
+        const title = CONFIG.WINDOW_TITLES[appType] || 'Window';
 
         // Get app content
         const appContent = WindowApps.getAppContent(appType);
@@ -374,9 +444,15 @@ class Desktop {
             this.makeWindowDraggable(window, titlebar);
         }
 
-        // Focus window on click
-        window.addEventListener('mousedown', () => {
-            this.focusWindow(id);
+        // Make window resizable
+        this.makeWindowResizable(window);
+
+        // Focus window on click (anywhere on window)
+        window.addEventListener('mousedown', (e) => {
+            // Don't focus if clicking on controls (they handle their own events)
+            if (!e.target.closest('.mac-titlebar-controls')) {
+                this.focusWindow(id);
+            }
         });
 
         // Initialize app JavaScript
@@ -387,16 +463,27 @@ class Desktop {
 
     /**
      * Focus a window (bring to front)
+     * Phase 6: Window Management - Active window highlighting
      */
     focusWindow(windowId) {
+        // Remove active class from all windows
+        this.windows.forEach(w => {
+            w.element.classList.remove('window-active');
+        });
+
         const window = this.windows.find(w => w.id === windowId);
         if (window) {
+            // Bring to front
             window.element.style.zIndex = this.windowZIndex++;
+            // Add active class for visual highlighting
+            window.element.classList.add('window-active');
+            this.activeWindowId = windowId;
         }
     }
 
     /**
      * Close a window
+     * Phase 6: Window Management - Clean up active/minimized state
      */
     closeWindow(windowId) {
         const windowIndex = this.windows.findIndex(w => w.id === windowId);
@@ -404,18 +491,103 @@ class Desktop {
             const window = this.windows[windowIndex];
             window.element.remove();
             this.windows.splice(windowIndex, 1);
+            
+            // Clean up state
+            if (this.activeWindowId === windowId) {
+                this.activeWindowId = null;
+            }
+            const minimizedIndex = this.minimizedWindows.indexOf(windowId);
+            if (minimizedIndex > -1) {
+                this.minimizedWindows.splice(minimizedIndex, 1);
+            }
         }
     }
 
     /**
      * Minimize a window
+     * Phase 6: Window Management - Store minimized state for restore
      */
     minimizeWindow(windowId) {
         const window = this.windows.find(w => w.id === windowId);
         if (window) {
             window.element.style.display = 'none';
-            // Could add to a taskbar in future
+            window.element.classList.remove('window-active');
+            // Track minimized state
+            if (!this.minimizedWindows.includes(windowId)) {
+                this.minimizedWindows.push(windowId);
+            }
+            // Clear active window if this was active
+            if (this.activeWindowId === windowId) {
+                this.activeWindowId = null;
+            }
         }
+    }
+
+    /**
+     * Restore a minimized window
+     * Phase 6: Window Management - Restore functionality
+     */
+    restoreWindow(windowId) {
+        const window = this.windows.find(w => w.id === windowId);
+        if (window) {
+            window.element.style.display = 'flex';
+            // Remove from minimized list
+            const index = this.minimizedWindows.indexOf(windowId);
+            if (index > -1) {
+                this.minimizedWindows.splice(index, 1);
+            }
+            // Focus the restored window
+            this.focusWindow(windowId);
+        }
+    }
+
+    /**
+     * Make window resizable
+     */
+    makeWindowResizable(windowElement) {
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'window-resize-handle';
+        windowElement.appendChild(resizeHandle);
+
+        let isResizing = false;
+        let startX, startY, startWidth, startHeight;
+
+        resizeHandle.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startWidth = parseInt(document.defaultView.getComputedStyle(windowElement).width, 10);
+            startHeight = parseInt(document.defaultView.getComputedStyle(windowElement).height, 10);
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+
+            const width = startWidth + (e.clientX - startX);
+            const height = startHeight + (e.clientY - startY);
+
+            // Enforce minimum size
+            const newWidth = Math.max(width, CONFIG.WINDOW.MIN_WIDTH);
+            const newHeight = Math.max(height, CONFIG.WINDOW.MIN_HEIGHT);
+
+            windowElement.style.width = newWidth + 'px';
+            windowElement.style.height = newHeight + 'px';
+
+            // Keep window within viewport
+            const rect = windowElement.getBoundingClientRect();
+            if (rect.right > window.innerWidth) {
+                windowElement.style.width = (window.innerWidth - rect.left) + 'px';
+            }
+            if (rect.bottom > window.innerHeight) {
+                windowElement.style.height = (window.innerHeight - rect.top) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isResizing = false;
+        });
     }
 
     /**
@@ -448,10 +620,10 @@ class Desktop {
 
                 // Keep window within viewport
                 const maxX = window.innerWidth - windowElement.offsetWidth;
-                const maxY = window.innerHeight - windowElement.offsetHeight - 22; // Account for menu bar
+                const maxY = window.innerHeight - windowElement.offsetHeight - CONFIG.WINDOW.MENU_BAR_HEIGHT;
 
-                currentX = Math.max(0, Math.min(currentX, maxX));
-                currentY = Math.max(0, Math.min(currentY, maxY));
+                currentX = clamp(currentX, 0, maxX);
+                currentY = clamp(currentY, 0, maxY);
 
                 windowElement.style.left = currentX + 'px';
                 windowElement.style.top = currentY + 'px';
@@ -479,10 +651,13 @@ class Desktop {
 
     /**
      * Show desktop (minimize all windows)
+     * Phase 6: Window Management - Proper minimize tracking
      */
     showDesktop() {
         this.windows.forEach(window => {
-            window.element.style.display = 'none';
+            if (window.element.style.display !== 'none') {
+                this.minimizeWindow(window.id);
+            }
         });
     }
 
@@ -498,10 +673,12 @@ class Desktop {
 
     /**
      * Restore all windows
+     * Phase 6: Window Management - Use restoreWindow method
      */
     restoreAllWindows() {
-        this.windows.forEach(window => {
-            window.element.style.display = 'flex';
+        const minimized = [...this.minimizedWindows];
+        minimized.forEach(windowId => {
+            this.restoreWindow(windowId);
         });
     }
 
@@ -509,8 +686,23 @@ class Desktop {
      * Attach event listeners
      */
     attachEventListeners() {
-        // Track mouse movement
-        document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        // Track mouse movement - use capture phase to ensure we catch all events
+        document.addEventListener('mousemove', (e) => {
+            this.handleMouseMove(e);
+        }, { passive: true });
+        
+        // Also listen on window to catch events outside document
+        window.addEventListener('mousemove', (e) => {
+            this.handleMouseMove(e);
+        }, { passive: true });
+        
+        // Listen for openApp events from navigation links
+        window.addEventListener('openApp', (e) => {
+            const appType = e.detail?.appType;
+            if (appType) {
+                this.openWindow(appType);
+            }
+        });
 
         // Hide cursor when mouse leaves window
         document.addEventListener('mouseleave', () => {

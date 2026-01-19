@@ -3,141 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desktop</title>
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Desktop - Redirecting...</title>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'mac-gray': '#c0c0c0',
-                        'mac-dark-gray': '#808080',
-                        'mac-light-gray': '#e0e0e0',
-                        'mac-white': '#ffffff',
-                        'mac-black': '#000000',
-                    },
-                    fontFamily: {
-                        'chicago': ['Chicago', 'Geneva', 'monospace'],
-                        'geneva': ['Geneva', 'monospace'],
-                    },
-                }
-            }
-        }
+        // Redirect to the new frontend structure
+        window.location.replace('frontend/desktop.html');
     </script>
-    
-    <!-- Custom Retro CSS -->
-    <link rel="stylesheet" href="retro.css">
 </head>
-<body class="desktop-body">
-    <!-- Global Menu Bar (Always Visible) -->
-    <nav class="desktop-menubar">
-        <div class="mac-menu-item">
-            <span>File</span>
-        </div>
-        <div class="mac-menu-item">
-            <span>Edit</span>
-        </div>
-        <div class="mac-menu-item">
-            <span>View</span>
-        </div>
-        <div class="mac-menu-item">
-            <span>Label</span>
-        </div>
-        <div class="mac-menu-item mac-menu-dropdown" id="desktop-special-menu">
-            <span>Special</span>
-            <div class="mac-dropdown" id="desktop-special-dropdown">
-                <div class="mac-dropdown-item" id="show-desktop">Show Desktop</div>
-                <div class="mac-dropdown-item" id="close-all-windows">Close All Windows</div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Desktop Wallpaper -->
-    <div class="desktop-wallpaper">
-        <!-- Desktop Icons -->
-        <div class="desktop-icons">
-            <!-- Productivity App Icon (Todo + Pomodoro Combined) -->
-            <div class="desktop-icon" data-app="productivity">
-                <div class="icon-graphic">
-                    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
-                        <!-- Combined icon: Document with clock -->
-                        <!-- Document base -->
-                        <rect x="6" y="4" width="14" height="20" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <rect x="8" y="8" width="10" height="1.5" fill="#000000"/>
-                        <rect x="8" y="11" width="10" height="1.5" fill="#000000"/>
-                        <rect x="8" y="14" width="7" height="1.5" fill="#000000"/>
-                        <!-- Clock overlay (top right) -->
-                        <circle cx="22" cy="10" r="6" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <line x1="22" y1="10" x2="22" y2="6" stroke="#000000" stroke-width="1" stroke-linecap="square"/>
-                        <line x1="22" y1="10" x2="25" y2="10" stroke="#000000" stroke-width="1" stroke-linecap="square"/>
-                        <circle cx="22" cy="10" r="0.5" fill="#000000"/>
-                    </svg>
-                </div>
-                <div class="icon-label">Productivity</div>
-            </div>
-
-            <!-- Folder Icon -->
-            <div class="desktop-icon" data-app="folder">
-                <div class="icon-graphic">
-                    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
-                        <!-- Classic Mac folder -->
-                        <!-- Folder tab -->
-                        <rect x="6" y="6" width="10" height="4" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <rect x="8" y="8" width="6" height="2" fill="#000000"/>
-                        <!-- Folder body -->
-                        <rect x="6" y="10" width="20" height="18" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <!-- Folder highlight -->
-                        <rect x="8" y="12" width="16" height="1" fill="#000000"/>
-                        <rect x="8" y="14" width="16" height="1" fill="#000000"/>
-                        <rect x="8" y="16" width="12" height="1" fill="#000000"/>
-                    </svg>
-                </div>
-                <div class="icon-label">Folder</div>
-            </div>
-
-            <!-- Auth Icon -->
-            <div class="desktop-icon" data-app="auth">
-                <div class="icon-graphic">
-                    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
-                        <!-- Key/Lock icon -->
-                        <rect x="10" y="12" width="12" height="10" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <circle cx="16" cy="12" r="4" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <rect x="15" y="10" width="2" height="4" fill="#000000"/>
-                        <rect x="14" y="18" width="4" height="2" fill="#000000"/>
-                    </svg>
-                </div>
-                <div class="icon-label">Auth</div>
-            </div>
-
-            <!-- Trash Icon -->
-            <div class="desktop-icon" data-app="trash">
-                <div class="icon-graphic">
-                    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
-                        <!-- Trash can icon -->
-                        <rect x="10" y="6" width="12" height="2" fill="#000000"/>
-                        <rect x="12" y="8" width="8" height="18" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <rect x="14" y="10" width="4" height="1.5" fill="#000000"/>
-                        <rect x="14" y="13" width="4" height="1.5" fill="#000000"/>
-                        <rect x="14" y="16" width="4" height="1.5" fill="#000000"/>
-                        <rect x="15" y="24" width="2" height="2" fill="#000000"/>
-                    </svg>
-                </div>
-                <div class="icon-label">Trash</div>
-            </div>
-        </div>
-        <!-- App Windows Container -->
-        <div id="windows-container" class="windows-container"></div>
+<body>
+    <div style="text-align: center; padding: 50px; font-family: monospace;">
+        <p>Redirecting to new desktop...</p>
+        <p>If you are not redirected, <a href="frontend/desktop.html">click here</a>.</p>
     </div>
-
-    <!-- Custom Cursor - Pixelated Apple System 1.0 -->
-    <div id="custom-cursor" class="mac-cursor mac-cursor-normal">
-        <!-- Cursor image loaded from cursors folder -->
-        <img id="cursor-svg" src="cursors/Normal Select.cur" alt="cursor" width="16" height="16">
-    </div>
-    
-    <script type="module" src="js/desktop.js"></script>
 </body>
 </html>
-

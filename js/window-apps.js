@@ -11,10 +11,12 @@ export class WindowApps {
         switch(appType) {
             case 'productivity':
                 return this.getProductivityMenu();
-            case 'todo':
-                return this.getTodoContent();
             case 'pomodoro':
                 return this.getPomodoroContent();
+            case 'todo':
+                return this.getTodoContent();
+            case 'dashboard':
+                return this.getDashboardContent();
             case 'auth':
                 return this.getAuthContent();
             default:
@@ -46,7 +48,7 @@ export class WindowApps {
     }
 
     /**
-     * Get Todo app content
+     * Get Todo app content (Task Management)
      */
     static getTodoContent() {
         return `
@@ -58,48 +60,35 @@ export class WindowApps {
                         <div class="mac-dropdown-item" data-action="close-window">Close Window</div>
                     </div>
                 </div>
-                <div class="mac-menu-item mac-menu-dropdown" id="user-menu">
-                    <span id="menu-username">User</span>
-                    <div class="mac-dropdown" id="user-dropdown">
-                        <div class="mac-dropdown-item" id="logout-item">Logout</div>
-                    </div>
-                </div>
                 <div class="mac-menu-item">
                     <span>Help</span>
                 </div>
-                <div class="mac-menu-item">
-                    <span>About</span>
-                </div>
             </nav>
             <div class="mac-content">
-                <!-- Dashboard Section -->
-                <section class="dashboard-section">
-                    <div class="user-greeting" id="user-greeting"></div>
-                    <h2 class="section-title">Dashboard</h2>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value" id="today-count">0</div>
-                            <div class="stat-label">Today</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="week-count">0</div>
-                            <div class="stat-label">This Week</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="focus-minutes">0</div>
-                            <div class="stat-label">Minutes</div>
-                        </div>
-                    </div>
-                </section>
+                <!-- Navigation -->
+                <nav class="page-nav">
+                    <a href="#" class="nav-link" data-open-app="pomodoro">Pomodoro Timer</a>
+                    <span class="nav-separator">|</span>
+                    <a href="#" class="nav-link" data-open-app="dashboard">Dashboard</a>
+                </nav>
 
-                <!-- Task List Section -->
+                <!-- Task Input Section -->
                 <section class="task-section">
                     <h2 class="section-title">Tasks</h2>
                     <div class="task-input-container">
-                        <input type="text" id="task-input" class="mac-input" placeholder="Add a task...">
-                        <button type="button" id="add-task" class="mac-button">Add</button>
+                        <input type="text" id="task-input" class="mac-input" placeholder="Add a new task...">
+                        <button type="button" id="add-task-btn" class="mac-button">Add Task</button>
                     </div>
-                    <ul id="task-list" class="task-list"></ul>
+                    
+                    <!-- Task List -->
+                    <ul id="task-list" class="task-list">
+                        <!-- Tasks will be dynamically added here -->
+                    </ul>
+                    
+                    <!-- Empty State -->
+                    <div id="empty-state" class="empty-state" style="display:none;">
+                        <p>No tasks yet. Add your first task above!</p>
+                    </div>
                 </section>
             </div>
         `;
@@ -118,50 +107,145 @@ export class WindowApps {
                         <div class="mac-dropdown-item" data-action="close-window">Close Window</div>
                     </div>
                 </div>
-                <div class="mac-menu-item mac-menu-dropdown" id="user-menu">
-                    <span id="menu-username">User</span>
-                    <div class="mac-dropdown" id="user-dropdown">
-                        <div class="mac-dropdown-item" id="logout-item">Logout</div>
+                <div class="mac-menu-item">
+                    <span>Help</span>
+                </div>
+            </nav>
+            <div class="mac-content">
+                <!-- Navigation -->
+                <nav class="page-nav">
+                    <a href="#" class="nav-link" data-open-app="todo">Tasks</a>
+                    <span class="nav-separator">|</span>
+                    <a href="#" class="nav-link" data-open-app="dashboard">Dashboard</a>
+                </nav>
+
+                <!-- Task Selection -->
+                <section class="task-selection-section">
+                    <label for="task-select" class="task-select-label">Select Task:</label>
+                    <div class="task-select-container">
+                        <select id="task-select" class="mac-select">
+                            <option value="">-- No task selected --</option>
+                        </select>
+                        <button id="add-task-btn" class="mac-button">Add Task</button>
+                    </div>
+                </section>
+
+                <!-- Pomodoro Timer Section -->
+                <section class="timer-section">
+                    <!-- Mode Indicator -->
+                    <div class="mode-indicator" id="mode-indicator">Focus</div>
+                    
+                    <!-- Timer Display -->
+                    <div id="timer" class="timer-display">25:00</div>
+                    
+                    <!-- 4 Tomato Progress Blocks -->
+                    <div class="tomato-progress">
+                        <div class="tomato-block" id="tomato-1" data-filled="false">
+                            <div class="tomato-icon">🍅</div>
+                        </div>
+                        <div class="tomato-block" id="tomato-2" data-filled="false">
+                            <div class="tomato-icon">🍅</div>
+                        </div>
+                        <div class="tomato-block" id="tomato-3" data-filled="false">
+                            <div class="tomato-icon">🍅</div>
+                        </div>
+                        <div class="tomato-block" id="tomato-4" data-filled="false">
+                            <div class="tomato-icon">🍅</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="progress-container">
+                        <div id="progress-bar" class="progress-bar"></div>
+                    </div>
+                    
+                    <!-- Controls -->
+                    <div class="controls">
+                        <button id="start-btn" class="mac-button" disabled>Start</button>
+                        <button id="pause-btn" class="mac-button" style="display:none;">Pause</button>
+                        <button id="reset-btn" class="mac-button">Reset</button>
+                        <button id="skip-btn" class="mac-button" style="display:none;">Skip</button>
+                    </div>
+                </section>
+            </div>
+        `;
+    }
+
+    /**
+     * Get Dashboard app content
+     */
+    static getDashboardContent() {
+        return `
+            <nav class="mac-menubar">
+                <div class="mac-menu-item mac-menu-dropdown">
+                    <span>File</span>
+                    <div class="mac-dropdown">
+                        <div class="mac-dropdown-item" data-action="show-desktop">Show Desktop</div>
+                        <div class="mac-dropdown-item" data-action="close-window">Close Window</div>
                     </div>
                 </div>
                 <div class="mac-menu-item">
                     <span>Help</span>
                 </div>
-                <div class="mac-menu-item">
-                    <span>About</span>
-                </div>
             </nav>
             <div class="mac-content">
-                <!-- Pomodoro Timer Section -->
-                <section class="timer-section">
-                    <div class="session-info" id="session-type">Work Session</div>
+                <!-- Navigation -->
+                <nav class="page-nav">
+                    <a href="#" class="nav-link" data-open-app="pomodoro">Pomodoro Timer</a>
+                    <span class="nav-separator">|</span>
+                    <a href="#" class="nav-link" data-open-app="todo">Tasks</a>
+                </nav>
+
+                <!-- Statistics Section -->
+                <section class="dashboard-section">
+                    <h2 class="section-title">Statistics</h2>
                     
-                    <div class="active-task-display">
-                        <div class="active-task-label">Focus</div>
-                        <div class="active-task-text" id="active-task-text">No task selected</div>
-                    </div>
-                    
-                    <div id="timer" class="timer-display">25:00</div>
-                    <div class="focus-hint" id="focus-hint"></div>
-                    
-                    <div class="pomodoro-indicator">
-                        <div class="pomodoro-circle" id="circle-1"></div>
-                        <div class="pomodoro-circle" id="circle-2"></div>
-                        <div class="pomodoro-circle" id="circle-3"></div>
-                        <div class="pomodoro-circle" id="circle-4"></div>
-                    </div>
-                    
-                    <div class="progress-container">
-                        <div id="progress-bar" class="progress-bar"></div>
-                    </div>
-                    
-                    <div class="controls">
-                        <button id="start-btn" class="mac-button">Start</button>
-                        <button id="pause-btn" class="mac-button" style="display:none;">Pause</button>
-                        <button id="reset-btn" class="mac-button">Reset</button>
-                        <button id="skip-btn" class="mac-button">Skip</button>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-pomodoros">0</div>
+                            <div class="stat-label">Total Pomodoros</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-focus-time">0 min</div>
+                            <div class="stat-label">Total Focus Time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-break-time">0 min</div>
+                            <div class="stat-label">Total Break Time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="tasks-completed">0</div>
+                            <div class="stat-label">Tasks Completed</div>
+                        </div>
                     </div>
                 </section>
+
+                <!-- Session History Section -->
+                <section class="history-section">
+                    <h2 class="section-title">Session History</h2>
+                    <div id="session-history" class="session-history">
+                        <!-- History items will be dynamically added here -->
+                    </div>
+                    <div id="empty-history" class="empty-state">
+                        <p>No sessions yet. Start a Pomodoro timer to see your progress!</p>
+                    </div>
+                </section>
+
+                <!-- Daily Summary Section -->
+                <section class="daily-summary-section">
+                    <h2 class="section-title">Daily Summary</h2>
+                    <div id="daily-summary" class="daily-summary">
+                        <!-- Daily summaries will be dynamically added here -->
+                    </div>
+                    <div id="empty-daily" class="empty-state">
+                        <p>No daily data yet.</p>
+                    </div>
+                </section>
+
+                <!-- Reset Button -->
+                <div class="dashboard-actions">
+                    <button id="reset-stats-btn" class="mac-button mac-button-danger">Reset Statistics</button>
+                </div>
             </div>
         `;
     }
@@ -253,6 +337,8 @@ export class WindowApps {
                 return this.initTodoApp(windowElement);
             case 'pomodoro':
                 return this.initPomodoroApp(windowElement);
+            case 'dashboard':
+                return this.initDashboardApp(windowElement);
             case 'auth':
                 return this.initAuthApp(windowElement);
             case 'productivity':
@@ -291,37 +377,80 @@ export class WindowApps {
     }
 
     /**
-     * Initialize Todo app
+     * Initialize Pomodoro app (using new Pomodoro class)
+     */
+    static async initPomodoroApp(windowElement) {
+        try {
+            // Wait a bit for DOM to be ready
+            await new Promise(resolve => setTimeout(resolve, 150));
+            
+            // Import and initialize new Pomodoro class
+            const { Pomodoro } = await import('../frontend/js/pomodoro.js');
+            const pomodoro = new Pomodoro(windowElement);
+            await pomodoro.init();
+            
+            // Setup navigation links to open windows
+            this.setupNavigationLinks(windowElement);
+        } catch (error) {
+            console.error('Error initializing Pomodoro app:', error);
+        }
+    }
+
+    /**
+     * Initialize Todo app (simple version)
      */
     static async initTodoApp(windowElement) {
         try {
             // Wait a bit for DOM to be ready
             await new Promise(resolve => setTimeout(resolve, 50));
             
-            // Import and initialize TodoPage
-            const { default: TodoPage } = await import('./todo-page.js');
-            const page = new TodoPage();
-            await page.init();
+            // Import and initialize simple Todo
+            const todoModule = await import('./todo-page-simple.js');
+            // The module auto-initializes on load
+            
+            // Setup navigation links to open windows
+            this.setupNavigationLinks(windowElement);
         } catch (error) {
             console.error('Error initializing Todo app:', error);
         }
     }
 
     /**
-     * Initialize Pomodoro app
+     * Initialize Dashboard app
      */
-    static async initPomodoroApp(windowElement) {
+    static async initDashboardApp(windowElement) {
         try {
             // Wait a bit for DOM to be ready
             await new Promise(resolve => setTimeout(resolve, 50));
             
-            // Import and initialize PomodoroPage
-            const { default: PomodoroPage } = await import('./pomodoro-page.js');
-            const page = new PomodoroPage();
-            await page.init();
+            // Import and initialize Dashboard
+            const dashboardModule = await import('./dashboard-page.js');
+            // The module auto-initializes on load
+            
+            // Setup navigation links to open windows
+            this.setupNavigationLinks(windowElement);
         } catch (error) {
-            console.error('Error initializing Pomodoro app:', error);
+            console.error('Error initializing Dashboard app:', error);
         }
+    }
+
+    /**
+     * Setup navigation links to open windows instead of navigating
+     */
+    static setupNavigationLinks(windowElement) {
+        const navLinks = windowElement.querySelectorAll('[data-open-app]');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const appType = link.getAttribute('data-open-app');
+                if (appType) {
+                    // Dispatch event to open app window
+                    window.dispatchEvent(new CustomEvent('openApp', { 
+                        detail: { appType } 
+                    }));
+                }
+            });
+        });
     }
 
     /**

@@ -1,0 +1,186 @@
+/* Window System Styling - Frames, Title Bars, Controls */
+
+/* Windows Container - Desktop Windows */
+.windows-container {
+    position: fixed;
+    top: 22px;
+    left: 0;
+    width: 100vw;
+    height: calc(100vh - 22px);
+    pointer-events: none;
+    z-index: 100;
+}
+
+/* Desktop Window - Floating on Desktop */
+.desktop-window {
+    position: absolute;
+    background: #c0c0c0;
+    border: 2px solid #000000;
+    box-shadow: 4px 4px 0px 0px #000000;
+    min-width: 400px;
+    min-height: 300px;
+    pointer-events: all;
+    z-index: 101;
+    display: flex;
+    flex-direction: column;
+    animation: window-appear 0.2s ease-out;
+    transition: box-shadow 0.1s ease;
+}
+
+/* Active Window Highlighting */
+.desktop-window.window-active {
+    box-shadow: 6px 6px 0px 0px #000000, 0 0 0 2px #ffffff;
+    border: 2px solid #000000;
+}
+
+.desktop-window:not(.window-active) {
+    opacity: 0.95;
+}
+
+/* Alert Window - Centered on Screen */
+.desktop-alert-window {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+}
+
+@keyframes window-appear {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Mac Window Container (Legacy - for standalone pages) */
+.mac-window {
+    width: 100%;
+    max-width: 600px;
+    background: #c0c0c0;
+    border: 2px solid #000000;
+    box-shadow: 4px 4px 0px 0px #000000;
+}
+
+/* Mac Title Bar */
+.mac-titlebar {
+    background: linear-gradient(to bottom, #808080 0%, #808080 50%, #000000 50%, #000000 100%);
+    background-size: 100% 2px;
+    background-repeat: repeat-x;
+    background-position: 0 0, 0 1px;
+    background-color: #808080;
+    border-bottom: 2px solid #000000;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    height: 22px;
+    justify-content: flex-start;
+    cursor: move;
+}
+
+.mac-titlebar-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.mac-close,
+.mac-minimize,
+.mac-maximize {
+    width: 12px;
+    height: 12px;
+    border: 1px solid #000000;
+    background: #c0c0c0;
+    display: inline-block;
+    box-shadow: inset -1px -1px 0px 0px #808080;
+    cursor: pointer;
+    position: relative;
+}
+
+.mac-close {
+    background: #ff0000;
+}
+
+.mac-close:hover {
+    background: #ff3333;
+}
+
+.mac-close:active {
+    box-shadow: inset 1px 1px 0px 0px #808080;
+    transform: translate(1px, 1px);
+}
+
+.mac-minimize {
+    background: #ffff00;
+}
+
+.mac-minimize:hover {
+    background: #ffff33;
+}
+
+.mac-minimize:active {
+    box-shadow: inset 1px 1px 0px 0px #808080;
+    transform: translate(1px, 1px);
+}
+
+.mac-maximize {
+    background: #00ff00;
+}
+
+.mac-maximize:hover {
+    background: #33ff33;
+}
+
+.mac-maximize:active {
+    box-shadow: inset 1px 1px 0px 0px #808080;
+    transform: translate(1px, 1px);
+}
+
+.mac-title {
+    font-family: 'Geneva', 'Chicago', monospace;
+    font-size: 12px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 1px 1px 0px #000000;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    text-align: center;
+    pointer-events: none;
+}
+
+/* Window Content */
+.mac-content {
+    padding: 16px;
+    background: #c0c0c0;
+    flex: 1;
+    overflow: auto;
+    min-height: 200px;
+}
+
+/* Desktop Window Content */
+.desktop-window .mac-content {
+    padding: 16px;
+    background: #c0c0c0;
+    flex: 1;
+    overflow: auto;
+}
+
+/* Window Resize Handle */
+.window-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    cursor: nwse-resize;
+    background: linear-gradient(135deg, transparent 0%, transparent 40%, #000000 40%, #000000 45%, transparent 45%, transparent 60%, #000000 60%, #000000 65%, transparent 65%);
+    z-index: 10;
+}
+

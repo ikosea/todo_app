@@ -3,6 +3,7 @@
  */
 
 import { API } from './api.js';
+import { CONFIG } from './config.js';
 
 class AuthPage {
     constructor() {
@@ -133,26 +134,62 @@ class AuthPage {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/login', {
+            const response = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.AUTH.LOGIN}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({username, password})
             });
 
-            const data = await response.json();
+            // Check if response is JSON before parsing
+            const contentType = response.headers.get('content-type');
+            let data = null;
+            
+            if (contentType && contentType.includes('application/json')) {
+                try {
+                    const text = await response.text();
+                    data = text ? JSON.parse(text) : null;
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    errorEl.textContent = 'Invalid response from server';
+                    errorEl.classList.add('show');
+                    return;
+                }
+            }
 
             if (response.ok) {
-                // Store authentication token and user data
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('currentUser', JSON.stringify(data.user));
-                // Redirect to todo page
-                window.location.href = 'todo.html';
+                if (data && data.token) {
+                    // Store authentication token and user data
+                    localStorage.setItem(CONFIG.STORAGE.AUTH_TOKEN, data.token);
+                    localStorage.setItem(CONFIG.STORAGE.CURRENT_USER, JSON.stringify(data.user));
+                    
+                    // Check if we're in desktop mode
+                    if (document.body.classList.contains('desktop-body')) {
+                        window.location.reload();
+                    } else {
+                        window.location.href = 'desktop.html';
+                    }
+                } else {
+                    errorEl.textContent = 'Invalid response from server';
+                    errorEl.classList.add('show');
+                }
             } else {
-                errorEl.textContent = data.error || 'Login failed';
+                // Server returned an error response
+                errorEl.textContent = (data && data.error) ? data.error : `Login failed (${response.status})`;
                 errorEl.classList.add('show');
             }
         } catch (error) {
-            errorEl.textContent = 'Connection error. Make sure backend is running.';
+            // Distinguish between connection errors and other errors
+            console.error('Login error:', error);
+            
+            if (error instanceof TypeError && error.message.includes('fetch')) {
+                // Network/connection error
+                errorEl.textContent = 'Connection error. Make sure backend is running on http://localhost:5000';
+            } else if (error.name === 'NetworkError' || error.message.includes('network')) {
+                errorEl.textContent = 'Network error. Please check your connection.';
+            } else {
+                // Other errors
+                errorEl.textContent = error.message || 'An unexpected error occurred.';
+            }
             errorEl.classList.add('show');
         }
     }
@@ -182,25 +219,61 @@ class AuthPage {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/register', {
+            const response = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.AUTH.REGISTER}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({username, email, password})
             });
 
-            const data = await response.json();
+            // Check if response is JSON before parsing
+            const contentType = response.headers.get('content-type');
+            let data = null;
+            
+            if (contentType && contentType.includes('application/json')) {
+                try {
+                    const text = await response.text();
+                    data = text ? JSON.parse(text) : null;
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    errorEl.textContent = 'Invalid response from server';
+                    errorEl.classList.add('show');
+                    return;
+                }
+            }
 
             if (response.ok) {
-                // Store user data
-                localStorage.setItem('currentUser', JSON.stringify(data.user));
-                // Redirect to todo page
-                window.location.href = 'todo.html';
+                if (data && data.user) {
+                    // Store user data
+                    localStorage.setItem(CONFIG.STORAGE.CURRENT_USER, JSON.stringify(data.user));
+                    
+                    // Check if we're in desktop mode
+                    if (document.body.classList.contains('desktop-body')) {
+                        window.location.reload();
+                    } else {
+                        window.location.href = 'desktop.html';
+                    }
+                } else {
+                    errorEl.textContent = 'Invalid response from server';
+                    errorEl.classList.add('show');
+                }
             } else {
-                errorEl.textContent = data.error || 'Registration failed';
+                // Server returned an error response
+                errorEl.textContent = (data && data.error) ? data.error : `Registration failed (${response.status})`;
                 errorEl.classList.add('show');
             }
         } catch (error) {
-            errorEl.textContent = 'Connection error. Make sure backend is running.';
+            // Distinguish between connection errors and other errors
+            console.error('Registration error:', error);
+            
+            if (error instanceof TypeError && error.message.includes('fetch')) {
+                // Network/connection error
+                errorEl.textContent = 'Connection error. Make sure backend is running on http://localhost:5000';
+            } else if (error.name === 'NetworkError' || error.message.includes('network')) {
+                errorEl.textContent = 'Network error. Please check your connection.';
+            } else {
+                // Other errors
+                errorEl.textContent = error.message || 'An unexpected error occurred.';
+            }
             errorEl.classList.add('show');
         }
     }

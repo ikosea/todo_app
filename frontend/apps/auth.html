@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Authentication</title>
+    
+    <!-- Custom Retro CSS -->
+    <script>
+        const cacheBuster = '?v=4&t=' + Date.now();
+        document.write('<link rel="stylesheet" href="../css/desktop.css' + cacheBuster + '">');
+        document.write('<link rel="stylesheet" href="../css/window.css' + cacheBuster + '">');
+        document.write('<link rel="stylesheet" href="../css/cursor.css' + cacheBuster + '">');
+        document.write('<link rel="stylesheet" href="../css/apps.css' + cacheBuster + '">');
+    </script>
+</head>
+<body class="desktop-body">
+    <!-- Global Menu Bar (Always Visible) -->
+    <nav class="desktop-menubar">
+        <div class="mac-menu-item">
+            <span>File</span>
+        </div>
+        <div class="mac-menu-item">
+            <span>Edit</span>
+        </div>
+        <div class="mac-menu-item">
+            <span>View</span>
+        </div>
+        <div class="mac-menu-item">
+            <span>Label</span>
+        </div>
+        <div class="mac-menu-item mac-menu-dropdown" id="desktop-special-menu">
+            <span>Special</span>
+            <div class="mac-dropdown" id="desktop-special-dropdown">
+                <div class="mac-dropdown-item" id="show-desktop">Show Desktop</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Desktop Wallpaper -->
+    <div class="desktop-wallpaper">
+        <!-- Centered Auth Window -->
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; width: 600px; max-width: calc(100vw - 40px);">
+            <!-- Mac-style Window -->
+            <section class="mac-window" style="width: 100%;">
+                <!-- Window Title Bar -->
+                <header class="mac-titlebar">
+                    <div class="mac-titlebar-controls">
+                        <span class="mac-close" id="auth-close-btn"></span>
+                        <span class="mac-minimize"></span>
+                        <span class="mac-maximize"></span>
+                    </div>
+                    <h1 class="mac-title">Authentication</h1>
+                </header>
+                
+                <!-- Menu Bar -->
+                <nav class="mac-menubar">
+                    <div class="mac-menu-item">
+                        <span>File</span>
+                    </div>
+                    <div class="mac-menu-item">
+                        <span>Edit</span>
+                    </div>
+                    <div class="mac-menu-item mac-menu-dropdown" id="auth-menu">
+                        <span>Auth</span>
+                        <div class="mac-dropdown" id="auth-dropdown">
+                            <div class="mac-dropdown-item" data-mode="signin">Sign In</div>
+                            <div class="mac-dropdown-item" data-mode="signup">Sign Up</div>
+                        </div>
+                    </div>
+                    <div class="mac-menu-item">
+                        <span>Help</span>
+                    </div>
+                    <div class="mac-menu-item">
+                        <span>About</span>
+                    </div>
+                </nav>
+                    
+                    <!-- Window Content -->
+                    <div class="mac-content">
+                        <!-- Tab Strip -->
+                        <div class="mac-tabstrip">
+                            <button class="mac-tab active" id="tab-signin" data-mode="signin">Sign In</button>
+                            <button class="mac-tab" id="tab-signup" data-mode="signup">Sign Up</button>
+                        </div>
+                        
+                        <!-- Info Message -->
+                        <div style="padding: 16px; background: #e0e0e0; border: 1px solid #808080; margin: 16px; font-size: 11px; text-align: center;">
+                            <p style="margin: 0;">Please sign in or sign up to access the desktop.</p>
+                        </div>
+                        
+                        <!-- Form Area -->
+                        <div class="auth-forms">
+                            <!-- Sign In Form -->
+                            <form class="auth-form active" id="signin-form" data-mode="signin">
+                                <div class="form-group">
+                                    <label class="form-label">Username or Email</label>
+                                    <input type="text" id="signin-username" class="mac-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" id="signin-password" class="mac-input" required>
+                                </div>
+                                <button type="submit" class="mac-button mac-button-primary">Sign In</button>
+                                <div id="signin-error" class="error-message"></div>
+                            </form>
+                            
+                            <!-- Sign Up Form -->
+                            <form class="auth-form" id="signup-form" data-mode="signup">
+                                <div class="form-group">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" id="signup-username" class="mac-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" id="signup-email" class="mac-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" id="signup-password" class="mac-input" required minlength="6">
+                                </div>
+                                <button type="submit" class="mac-button mac-button-primary">Sign Up</button>
+                                <div id="signup-error" class="error-message"></div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </div>
+    </div>
+
+    <!-- Custom Cursor - Pixelated Apple System 1.0 -->
+    <div id="custom-cursor" class="mac-cursor mac-cursor-normal">
+        <img id="cursor-svg" src="../assets/cursors/Normal Select.cur" alt="cursor" width="16" height="16">
+    </div>
+    
+    <script type="module">
+        // Force cache refresh for imports
+        const importCacheBuster = '?v=4&t=' + Date.now();
+        
+        // Check if already authenticated and redirect to desktop
+        async function checkAuthAndRedirect() {
+            const { CONFIG } = await import('../js/config.js' + importCacheBuster);
+            const token = localStorage.getItem(CONFIG.STORAGE.AUTH_TOKEN);
+            
+            if (!token) {
+                // No token, stay on auth page
+                return;
+            }
+            
+            // Verify token with backend
+            try {
+                const response = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.AUTH.ME}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    // Already authenticated, redirect to desktop
+                    window.location.href = '../desktop.html';
+                } else {
+                    // Token invalid, clear it and stay on auth page
+                    localStorage.removeItem(CONFIG.STORAGE.AUTH_TOKEN);
+                    localStorage.removeItem(CONFIG.STORAGE.CURRENT_USER);
+                }
+            } catch (error) {
+                // Connection error - stay on auth page
+                console.warn('Auth check failed:', error);
+            }
+        }
+        
+        // Minimal cursor tracking for auth page (desktop.js owns cursor once signed in)
+        function initCursor() {
+            const cursor = document.getElementById('custom-cursor');
+            if (!cursor) return;
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = `${e.clientX}px`;
+                cursor.style.top = `${e.clientY}px`;
+            });
+        }
+
+        // Desktop-like Special menu dropdown
+        function initMenu() {
+            // Desktop menu
+            const desktopMenu = document.getElementById('desktop-special-menu');
+            if (desktopMenu) {
+                desktopMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    desktopMenu.classList.toggle('active');
+                });
+
+                document.addEventListener('click', () => {
+                    desktopMenu.classList.remove('active');
+                });
+
+                const showDesktop = document.getElementById('show-desktop');
+                if (showDesktop) {
+                    showDesktop.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        alert('Please sign in or sign up to continue.');
+                    });
+                }
+            }
+
+            // Window menu dropdown (Auth menu in window)
+            const authMenu = document.getElementById('auth-menu');
+            if (authMenu) {
+                authMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    authMenu.classList.toggle('active');
+                });
+
+                document.addEventListener('click', () => {
+                    authMenu.classList.remove('active');
+                });
+
+                // Handle dropdown item clicks
+                const dropdownItems = authMenu.querySelectorAll('.mac-dropdown-item');
+                dropdownItems.forEach(item => {
+                    item.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const mode = item.getAttribute('data-mode');
+                        if (mode) {
+                            const { Auth } = await import('../js/auth.js' + importCacheBuster);
+                            Auth.updateUI(document.querySelector('.mac-window'), mode);
+                        }
+                        authMenu.classList.remove('active');
+                    });
+                });
+            }
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', async () => {
+                checkAuthAndRedirect();
+                initCursor();
+                initMenu();
+                
+                const windowElement = document.querySelector('.mac-window');
+                if (windowElement) {
+                    const { Auth } = await import('../js/auth.js' + importCacheBuster);
+                    Auth.init(windowElement);
+                }
+                
+                // Close button handler
+                const closeBtn = document.getElementById('auth-close-btn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        // Don't allow closing - user must authenticate
+                        alert('Please sign in or sign up to continue.');
+                    });
+                }
+            });
+        } else {
+            checkAuthAndRedirect();
+            initCursor();
+            initMenu();
+            
+            const windowElement = document.querySelector('.mac-window');
+            if (windowElement) {
+                const { Auth } = await import('../js/auth.js' + importCacheBuster);
+                Auth.init(windowElement);
+            }
+            
+            const closeBtn = document.getElementById('auth-close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    alert('Please sign in or sign up to continue.');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

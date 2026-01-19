@@ -1,0 +1,76 @@
+/* Custom Macintosh Cursor Styling */
+
+/* Custom Mac Cursor - Pixelated Apple System 1.0 Style */
+.mac-cursor {
+    position: fixed !important;
+    width: 16px;
+    height: 16px;
+    pointer-events: none !important;
+    z-index: 10000 !important;
+    /* Position is set via JavaScript using left/top */
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.mac-cursor img,
+.mac-cursor svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    pointer-events: none;
+}
+
+/* Pointer Cursor (Clickable) */
+.mac-cursor-pointer {
+    /* Transform offset handled in JS */
+}
+
+.mac-cursor-pointer svg path {
+    fill: #000000;
+}
+
+/* Text Cursor (I-beam) */
+.mac-cursor-text {
+    width: 2px;
+    height: 16px;
+    /* Transform is handled by JavaScript for positioning */
+}
+
+.mac-cursor-text svg,
+.mac-cursor-text img {
+    display: none !important;
+}
+
+.mac-cursor-text::after {
+    content: '';
+    display: block;
+    width: 2px;
+    height: 16px;
+    background: #000000;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Hide cursor when not moving */
+.mac-cursor.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Ensure cursor is always visible when not hidden */
+.mac-cursor:not(.hidden) {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+}
+
