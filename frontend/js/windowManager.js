@@ -3,8 +3,8 @@
  * Extracted from desktop.js for better organization
  */
 
-import { CONFIG } from './config.js?v=9';
-import { clamp } from './utils.js?v=9';
+import { CONFIG } from './config.js?v=10';
+import { clamp } from './utils.js?v=10';
 
 export class WindowManager {
     constructor() {

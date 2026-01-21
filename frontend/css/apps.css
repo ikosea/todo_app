@@ -1,4 +1,33 @@
-/* Application-Specific Styling - Todo, Pomodoro, Dashboard */
+/* Application-Specific Styling - Todo, Pomodoro, Dashboard, Meditation */
+
+/* ============================================
+   MEDITATION APP STYLES
+   ============================================ */
+
+#breathing-progress {
+    transition: stroke-dashoffset 0.3s ease;
+}
+
+#breathing-instruction {
+    font-family: 'Geneva', 'Chicago', monospace;
+    font-size: 18px;
+    font-weight: bold;
+    color: #000000;
+    text-transform: uppercase;
+}
+
+#breathing-timer {
+    font-family: 'Geneva', 'Chicago', monospace;
+    font-size: 32px;
+    font-weight: bold;
+    color: #000000;
+}
+
+#cycle-count {
+    font-family: 'Geneva', 'Chicago', monospace;
+    font-size: 12px;
+    color: #808080;
+}
 
 /* ============================================
    POMODORO APP STYLES

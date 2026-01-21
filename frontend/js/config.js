@@ -70,7 +70,8 @@ export const CONFIG = {
         'auth': 'Authentication',
         'folder': 'Folder',
         'trash': 'Trash',
-        'ambient': 'Ambient Noise'
+        'ambient': 'Ambient Noise',
+        'meditation': 'Meditation'
     },
 
     // Cursor Types

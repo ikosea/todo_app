@@ -8,9 +8,10 @@ import { Todo } from './todo.js';
 import { Pomodoro } from './pomodoro.js';
 import { Dashboard } from './dashboard.js';
 import { Trash } from './trash.js';
-import { Ambient } from './ambient.js?v=9';
+import { Ambient } from './ambient.js?v=10';
+import { Meditation } from './meditation.js?v=10';
 import { Folder } from './folder.js';
-import { CONFIG } from './config.js?v=9';
+import { CONFIG } from './config.js?v=10';
 
 export class WindowApps {
     /**
@@ -32,6 +33,8 @@ export class WindowApps {
                 return this.getTrashContent();
             case 'ambient':
                 return this.getAmbientContent();
+            case 'meditation':
+                return this.getMeditationContent();
             case 'folder':
                 return this.getFolderContent();
             default:

@@ -5,11 +5,11 @@
 
 // NOTE: We add a cache-busting query to module imports to avoid aggressive caching (notably in Edge)
 // when running via simple static servers (e.g., python http.server) that don't set cache headers.
-import { WindowManager } from './windowManager.js?v=9';
-import { WindowApps } from './windowApps.js?v=9';
-import { CONFIG } from './config.js?v=9';
-import { API } from './api.js?v=9';
-import { delay, clamp } from './utils.js?v=9';
+import { WindowManager } from './windowManager.js?v=10';
+import { WindowApps } from './windowApps.js?v=10';
+import { CONFIG } from './config.js?v=10';
+import { API } from './api.js?v=10';
+import { delay, clamp } from './utils.js?v=10';
 
 class Desktop {
     constructor() {
