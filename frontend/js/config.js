@@ -58,7 +58,10 @@ export const CONFIG = {
         FOLDER: 'folder',
         TRASH: 'trash',
         AMBIENT: 'ambient',
-        MEDITATION: 'meditation'
+        MEDITATION: 'meditation',
+        TUTORIAL: 'tutorial',
+        SETTINGS: 'settings',
+        ABOUT: 'about'
     },
 
     // Window Titles
@@ -71,7 +74,10 @@ export const CONFIG = {
         'folder': 'Folder',
         'trash': 'Trash',
         'ambient': 'Ambient Noise',
-        'meditation': 'Meditation'
+        'meditation': 'Meditation',
+        'tutorial': 'Tutorial',
+        'settings': 'Display Settings',
+        'about': 'About / Feedback'
     },
 
     // Cursor Types

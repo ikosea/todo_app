@@ -40,6 +40,7 @@
         document.write('<link rel="stylesheet" href="css/window.css' + cacheBuster + '">');
         document.write('<link rel="stylesheet" href="css/cursor.css' + cacheBuster + '">');
         document.write('<link rel="stylesheet" href="css/apps.css' + cacheBuster + '">');
+        document.write('<link rel="stylesheet" href="css/themes.css' + cacheBuster + '">');
     </script>
     <link rel="icon" href="assets/logo.svg">
 </head>
@@ -57,8 +58,17 @@
         <div class="mac-menu-item">
             <span>Edit</span>
         </div>
-        <div class="mac-menu-item">
+        <div class="mac-menu-item mac-menu-dropdown" id="desktop-view-menu">
             <span>View</span>
+            <div class="mac-dropdown" id="desktop-view-dropdown">
+                <div class="mac-dropdown-item" data-theme="default">Default (Light)</div>
+                <div class="mac-dropdown-item-separator"></div>
+                <div class="mac-dropdown-item" data-theme="dark-pink">Dark + Pink</div>
+                <div class="mac-dropdown-item" data-theme="dark-violet">Dark + Violet</div>
+                <div class="mac-dropdown-item" data-theme="dark-grey">Dark + Grey</div>
+                <div class="mac-dropdown-item-separator"></div>
+                <div class="mac-dropdown-item" id="display-settings">Display Settings...</div>
+            </div>
         </div>
         <div class="mac-menu-item">
             <span>Label</span>
@@ -201,6 +211,31 @@
                     </svg>
                 </div>
                 <div class="icon-label">Meditation</div>
+            </div>
+
+            <!-- Help / Tutorial Icon -->
+            <div class="desktop-icon" data-app="tutorial">
+                <div class="icon-graphic">
+                    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+                        <!-- Question mark in a box -->
+                        <rect x="6" y="6" width="20" height="20" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+                        <text x="16" y="21" text-anchor="middle" font-family="Geneva, monospace" font-size="16" font-weight="bold" fill="#000000">?</text>
+                    </svg>
+                </div>
+                <div class="icon-label">Help</div>
+            </div>
+
+            <!-- Author / Feedback Icon -->
+            <div class="desktop-icon" data-app="about">
+                <div class="icon-graphic">
+                    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+                        <!-- "i" badge -->
+                        <rect x="6" y="6" width="20" height="20" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+                        <circle cx="16" cy="12" r="1.5" fill="#000000"/>
+                        <rect x="15" y="14" width="2" height="10" fill="#000000"/>
+                    </svg>
+                </div>
+                <div class="icon-label">Ikosea</div>
             </div>
         </div>
         <!-- App Windows Container -->

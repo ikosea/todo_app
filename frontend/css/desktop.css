@@ -49,10 +49,11 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: #c0c0c0;
+    background: var(--wallpaper-bg, #c0c0c0);
     background-image: 
         repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
         repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    filter: var(--wallpaper-filter, none);
     z-index: 0;
     padding-top: 22px;
 }
@@ -139,6 +140,11 @@ body {
 
 .desktop-icon.selected .icon-graphic svg {
     filter: invert(1);
+}
+
+/* Icon Dragging State */
+.desktop-icon.dragging {
+    opacity: 0.85;
 }
 
 /* Desktop Menu Bar (Global, Always Visible) */

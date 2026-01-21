@@ -11,6 +11,9 @@ import { Trash } from './trash.js';
 import { Ambient } from './ambient.js?v=10';
 import { Meditation } from './meditation.js?v=10';
 import { Folder } from './folder.js';
+import { Tutorial } from './tutorial.js?v=10';
+import { About } from './about.js?v=10';
+import { Settings } from './settings.js?v=10';
 import { CONFIG } from './config.js?v=10';
 
 export class WindowApps {
@@ -37,6 +40,12 @@ export class WindowApps {
                 return this.getMeditationContent();
             case 'folder':
                 return this.getFolderContent();
+            case 'tutorial':
+                return this.getTutorialContent();
+            case 'about':
+                return this.getAboutContent();
+            case 'settings':
+                return this.getSettingsContent();
             default:
                 return '<div class="mac-content"><p>Unknown app</p></div>';
         }
@@ -336,6 +345,21 @@ export class WindowApps {
                     await Meditation.init(windowElement);
                     console.log('Meditation app initialized');
                     break;
+                case 'tutorial':
+                    console.log('Initializing Tutorial app...');
+                    Tutorial.init(windowElement);
+                    console.log('Tutorial app initialized');
+                    break;
+                case 'about':
+                    console.log('Initializing About app...');
+                    About.init(windowElement);
+                    console.log('About app initialized');
+                    break;
+                case 'settings':
+                    console.log('Initializing Settings app...');
+                    Settings.init(windowElement);
+                    console.log('Settings app initialized');
+                    break;
                 default:
                     console.warn('Unknown app type:', appType);
             }
@@ -434,6 +458,131 @@ export class WindowApps {
                 <h2 class="section-title">Folder</h2>
                 <div class="empty-state" style="display:block;">
                     <p>Loading...</p>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Get Tutorial app content
+     */
+    static getTutorialContent() {
+        return `
+            <div class="mac-content">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap: 8px;">
+                    <h2 id="tutorial-title" class="section-title" style="margin: 0;">Welcome</h2>
+                    <div id="tutorial-step-indicator" style="font-family:'Geneva','Chicago', monospace; font-size: 11px; color:#808080;">Step 1</div>
+                </div>
+
+                <div id="tutorial-content" style="margin-top: 12px;">
+                    <div class="empty-state" style="display:block;"><p>Loading...</p></div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; gap: 8px; margin-top: 16px;">
+                    <div style="display:flex; gap: 8px;">
+                        <button id="tutorial-prev" class="mac-button">Prev</button>
+                        <button id="tutorial-next" class="mac-button mac-button-primary">Next</button>
+                    </div>
+                    <div style="display:flex; gap: 8px;">
+                        <button id="tutorial-skip" class="mac-button">Skip</button>
+                        <button id="tutorial-close" class="mac-button">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Get About / Feedback app content
+     */
+    static getAboutContent() {
+        return `
+            <div class="mac-content">
+                <h2 class="section-title" style="margin-top: 0;">Ikosea</h2>
+
+                <div style="font-family:'Geneva','Chicago', monospace; font-size: 12px; line-height: 1.6;">
+                    <p style="margin-bottom: 10px;">
+                        Built with care as a retro Macintosh-inspired productivity desktop.
+                    </p>
+                    <p style="margin-bottom: 12px;">
+                        <strong>Feedback welcome</strong> — ideas, bugs, UX suggestions, and feature requests.
+                    </p>
+                </div>
+
+                <div class="task-selection-section" style="margin: 0; padding: 12px;">
+                    <div style="display:flex; justify-content:space-between; gap: 10px; align-items:center; flex-wrap:wrap;">
+                        <div>
+                            <div style="font-size: 11px; font-weight:bold; margin-bottom: 4px;">Contact</div>
+                            <div style="font-size: 12px;">
+                                GitHub: <span id="about-github-handle">@ikosea</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap: 8px; align-items:center;">
+                            <button id="about-copy-github" class="mac-button">Copy GitHub</button>
+                            <a class="mac-button" href="https://github.com/ikosea" target="_blank" rel="noreferrer" style="text-decoration:none; display:inline-block;">Open Profile</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 12px; display:flex; gap: 10px; flex-wrap:wrap; justify-content:center;">
+                    <a class="mac-button mac-button-primary" href="https://github.com/ikosea" target="_blank" rel="noreferrer" style="text-decoration:none; display:inline-block;">GitHub</a>
+                    <a class="mac-button" href="https://github.com/ikosea?tab=repositories" target="_blank" rel="noreferrer" style="text-decoration:none; display:inline-block;">Repositories</a>
+                </div>
+
+                <div style="margin-top: 12px; font-family:'Geneva', monospace; font-size: 11px; color:#808080; text-align:center;">
+                    Tip: You can also export your data from File → Export Data before reporting a bug.
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Get Display Settings app content
+     */
+    static getSettingsContent() {
+        return `
+            <div class="mac-content">
+                <h2 class="section-title" style="margin-top: 0;">Display Settings</h2>
+
+                <div style="font-family:'Geneva','Chicago', monospace; font-size: 12px; line-height: 1.6; margin-bottom: 20px;">
+                    <p>Adjust the appearance of your desktop wallpaper.</p>
+                </div>
+
+                <div class="task-selection-section" style="margin-bottom: 16px; padding: 16px;">
+                    <div style="margin-bottom: 16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                            <label for="brightness-slider" style="font-size: 11px; font-weight:bold;">Brightness</label>
+                            <span id="brightness-value" style="font-size: 11px; font-weight:bold;">100%</span>
+                        </div>
+                        <input type="range" id="brightness-slider" min="0" max="200" value="100" 
+                               style="width: 100%; height: 8px; cursor: pointer;" />
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                            <label for="contrast-slider" style="font-size: 11px; font-weight:bold;">Contrast</label>
+                            <span id="contrast-value" style="font-size: 11px; font-weight:bold;">100%</span>
+                        </div>
+                        <input type="range" id="contrast-slider" min="0" max="200" value="100" 
+                               style="width: 100%; height: 8px; cursor: pointer;" />
+                    </div>
+
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                            <label for="saturation-slider" style="font-size: 11px; font-weight:bold;">Saturation</label>
+                            <span id="saturation-value" style="font-size: 11px; font-weight:bold;">100%</span>
+                        </div>
+                        <input type="range" id="saturation-slider" min="0" max="200" value="100" 
+                               style="width: 100%; height: 8px; cursor: pointer;" />
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:center; margin-top: 16px;">
+                    <button id="settings-reset" class="mac-button">Reset to Default</button>
+                </div>
+
+                <div style="margin-top: 12px; font-family:'Geneva', monospace; font-size: 11px; color:#808080; text-align:center;">
+                    Settings are saved automatically and persist across sessions.
                 </div>
             </div>
         `;

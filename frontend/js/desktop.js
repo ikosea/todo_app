@@ -18,6 +18,8 @@ class Desktop {
         this.cursorY = 0;
         this.cursorState = 'normal';
         this.selectedIcon = null;
+        this.dragState = null;
+        this.lastDragEndAt = 0;
         this.windowManager = new WindowManager();
         this.init();
         this.initOfflineSupport();
@@ -49,10 +51,16 @@ class Desktop {
      * Initialize desktop
      */
     init() {
+        this.loadSavedTheme();
+        this.loadSavedDisplaySettings();
         this.initCursor();
         this.initIcons();
         this.initMenuBar();
+        // Update theme checkmarks after menu is initialized
+        const savedTheme = localStorage.getItem('desktopTheme') || 'default';
+        this.updateThemeMenuCheckmarks(savedTheme === 'default' ? null : savedTheme);
         this.attachEventListeners();
+        this.showTutorialIfFirstTime();
     }
 
     /**
@@ -184,6 +192,14 @@ class Desktop {
             }
         });
 
+        // Allow apps to request closing their window
+        window.addEventListener('closeWindow', (e) => {
+            const windowId = e.detail?.windowId;
+            if (windowId) {
+                this.windowManager.closeWindow(windowId);
+            }
+        });
+
         // Menu actions are handled in initMenuBar() for better event handling
     }
 
@@ -192,6 +208,7 @@ class Desktop {
      */
     initIcons() {
         const icons = document.querySelectorAll('.desktop-icon');
+        this.applySavedIconPositions(icons);
         icons.forEach(icon => {
             icon.addEventListener('click', (e) => this.handleIconClick(e, icon));
             icon.addEventListener('mousedown', (e) => this.handleIconMouseDown(e, icon));
@@ -284,6 +301,42 @@ class Desktop {
                 });
             }
         }
+
+        // View menu
+        const viewMenu = document.getElementById('desktop-view-menu');
+        if (viewMenu) {
+            viewMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                viewMenu.classList.toggle('active');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!viewMenu.contains(e.target)) {
+                    viewMenu.classList.remove('active');
+                }
+            });
+
+            // View menu handlers - Theme selection
+            const themeItems = viewMenu.querySelectorAll('[data-theme]');
+            themeItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const theme = item.getAttribute('data-theme');
+                    this.applyTheme(theme);
+                    viewMenu.classList.remove('active');
+                });
+            });
+
+            // Display Settings menu item
+            const displaySettings = document.getElementById('display-settings');
+            if (displaySettings) {
+                displaySettings.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.openWindow('settings');
+                    viewMenu.classList.remove('active');
+                });
+            }
+        }
     }
 
     /**
@@ -365,6 +418,8 @@ class Desktop {
      */
     async handleIconClick(e, icon) {
         e.stopPropagation();
+        // If we just finished dragging, ignore the click that follows mouseup
+        if (Date.now() - this.lastDragEndAt < 250) return;
         const appType = icon.getAttribute('data-app');
         
         if (!appType) return;
@@ -422,6 +477,40 @@ class Desktop {
      */
     handleIconMouseDown(e, icon) {
         icon.classList.add('pressed');
+        // Start drag tracking
+        if (e.button !== 0) return; // left click only
+
+        const container = document.querySelector('.desktop-icons');
+        if (!container) return;
+
+        const rect = container.getBoundingClientRect();
+        const iconRect = icon.getBoundingClientRect();
+
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const offsetX = startX - iconRect.left;
+        const offsetY = startY - iconRect.top;
+
+        // Ensure the icon is absolutely positioned once dragged
+        icon.style.position = 'absolute';
+        icon.style.left = `${iconRect.left - rect.left}px`;
+        icon.style.top = `${iconRect.top - rect.top}px`;
+
+        this.dragState = {
+            icon,
+            container,
+            containerRect: rect,
+            offsetX,
+            offsetY,
+            startX,
+            startY,
+            moved: false
+        };
+
+        const onMove = (ev) => this.handleIconDragMove(ev);
+        const onUp = (ev) => this.handleIconDragEnd(ev, onMove, onUp);
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
     }
 
     /**
@@ -429,6 +518,114 @@ class Desktop {
      */
     handleIconMouseUp(e, icon) {
         icon.classList.remove('pressed');
+    }
+
+    handleIconDragMove(e) {
+        if (!this.dragState) return;
+        const { icon, container, offsetX, offsetY, containerRect, startX, startY } = this.dragState;
+
+        const dx = Math.abs(e.clientX - startX);
+        const dy = Math.abs(e.clientY - startY);
+        if (!this.dragState.moved && (dx > 4 || dy > 4)) {
+            this.dragState.moved = true;
+            icon.classList.add('dragging');
+        }
+
+        // Only move after slight threshold so clicks still work
+        if (!this.dragState.moved) return;
+
+        const x = e.clientX - containerRect.left - offsetX;
+        const y = e.clientY - containerRect.top - offsetY;
+
+        // Constrain inside container
+        const maxX = container.clientWidth - icon.offsetWidth;
+        const maxY = container.clientHeight - icon.offsetHeight;
+
+        const clampedX = Math.max(0, Math.min(maxX, x));
+        const clampedY = Math.max(0, Math.min(maxY, y));
+
+        icon.style.left = `${clampedX}px`;
+        icon.style.top = `${clampedY}px`;
+    }
+
+    handleIconDragEnd(e, onMove, onUp) {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+
+        if (!this.dragState) return;
+        const { icon, moved } = this.dragState;
+        icon.classList.remove('dragging');
+
+        if (moved) {
+            this.saveIconPosition(icon);
+            this.lastDragEndAt = Date.now();
+        }
+
+        this.dragState = null;
+    }
+
+    getIconPositionsKey() {
+        try {
+            const raw = localStorage.getItem(CONFIG.STORAGE.CURRENT_USER);
+            const user = raw ? JSON.parse(raw) : null;
+            const username = user?.username || 'guest';
+            return `desktopIconPositions:${username}`;
+        } catch {
+            return 'desktopIconPositions:guest';
+        }
+    }
+
+    loadIconPositions() {
+        try {
+            const raw = localStorage.getItem(this.getIconPositionsKey());
+            return raw ? JSON.parse(raw) : {};
+        } catch {
+            return {};
+        }
+    }
+
+    saveIconPositions(map) {
+        localStorage.setItem(this.getIconPositionsKey(), JSON.stringify(map));
+    }
+
+    saveIconPosition(icon) {
+        const appType = icon.getAttribute('data-app');
+        if (!appType) return;
+        const positions = this.loadIconPositions();
+        positions[appType] = {
+            left: icon.style.left,
+            top: icon.style.top
+        };
+        this.saveIconPositions(positions);
+    }
+
+    applySavedIconPositions(icons) {
+        const positions = this.loadIconPositions();
+        icons.forEach(icon => {
+            const appType = icon.getAttribute('data-app');
+            const pos = appType ? positions[appType] : null;
+            if (pos?.left != null && pos?.top != null) {
+                icon.style.position = 'absolute';
+                icon.style.left = pos.left;
+                icon.style.top = pos.top;
+            }
+        });
+    }
+
+    showTutorialIfFirstTime() {
+        // Show once per user
+        let username = 'guest';
+        try {
+            const raw = localStorage.getItem(CONFIG.STORAGE.CURRENT_USER);
+            const user = raw ? JSON.parse(raw) : null;
+            username = user?.username || 'guest';
+        } catch { /* ignore */ }
+        const key = `tutorialViewed:${username}`;
+        const already = localStorage.getItem(key) === 'true';
+        if (!already) {
+            // Give the desktop a moment to finish initializing windows/icons
+            setTimeout(() => this.openWindow('tutorial'), 300);
+        }
     }
 
     /**
@@ -523,6 +720,83 @@ class Desktop {
         };
 
         input.click();
+    }
+
+    /**
+     * Load saved theme from localStorage
+     */
+    loadSavedTheme() {
+        const savedTheme = localStorage.getItem('desktopTheme');
+        if (savedTheme) {
+            this.applyTheme(savedTheme, false); // false = don't save (already saved)
+        }
+    }
+
+    /**
+     * Apply theme to the desktop
+     * @param {string} theme - Theme name: 'default', 'dark-pink', 'dark-violet', 'dark-grey'
+     * @param {boolean} save - Whether to save the theme preference (default: true)
+     */
+    applyTheme(theme, save = true) {
+        const body = document.body;
+        
+        // Remove all theme classes
+        body.classList.remove('theme-dark-pink', 'theme-dark-violet', 'theme-dark-grey');
+        
+        // Apply new theme
+        if (theme && theme !== 'default') {
+            body.classList.add(`theme-${theme}`);
+        }
+        
+        // Save preference
+        if (save) {
+            localStorage.setItem('desktopTheme', theme || 'default');
+        }
+        
+        // Update menu checkmarks
+        this.updateThemeMenuCheckmarks(theme);
+    }
+
+    /**
+     * Update theme menu checkmarks
+     * @param {string} activeTheme - Currently active theme
+     */
+    updateThemeMenuCheckmarks(activeTheme) {
+        const themeItems = document.querySelectorAll('[data-theme]');
+        if (themeItems.length === 0) return; // Menu not initialized yet
+        
+        themeItems.forEach(item => {
+            const theme = item.getAttribute('data-theme');
+            const isActive = (theme === 'default' && (!activeTheme || activeTheme === 'default')) || theme === activeTheme;
+            
+            // Get original text (remove checkmark if present)
+            let originalText = item.textContent.replace(/^✓\s*/, '');
+            
+            // Set text with or without checkmark
+            item.textContent = isActive ? '✓ ' + originalText : originalText;
+        });
+    }
+
+    /**
+     * Load saved display settings and apply to wallpaper
+     */
+    loadSavedDisplaySettings() {
+        const saved = localStorage.getItem('displaySettings');
+        if (saved) {
+            try {
+                const settings = JSON.parse(saved);
+                const wallpaper = document.querySelector('.desktop-wallpaper');
+                if (wallpaper) {
+                    wallpaper.style.filter = `
+                        brightness(${settings.brightness || 100}%) 
+                        contrast(${settings.contrast || 100}%) 
+                        saturate(${settings.saturation || 100}%)
+                    `.trim();
+                }
+            } catch (e) {
+                console.warn('Failed to load display settings:', e);
+            }
+        }
     }
 
     /**

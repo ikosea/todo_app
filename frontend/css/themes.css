@@ -1,0 +1,512 @@
+/* Dark Retro UI Themes - 90s Mac Inspired */
+
+/* ============================================
+   BASE THEME VARIABLES (Default Light)
+   ============================================ */
+:root {
+    --theme-bg: #c0c0c0;
+    --theme-panel: #e0e0e0;
+    --theme-text: #000000;
+    --theme-text-light: #808080;
+    --theme-accent: #000000;
+    --theme-accent-soft: #808080;
+    --theme-button-bg: #c0c0c0;
+    --theme-button-text: #000000;
+    --theme-button-border: #000000;
+    --theme-hover-glow: rgba(0, 0, 0, 0.1);
+    --theme-window-shadow: 4px 4px 0px 0px #000000;
+    --theme-icon-stroke: #000000;
+    --theme-icon-fill: #ffffff;
+}
+
+/* ============================================
+   THEME 1: DARK + PINK
+   ============================================ */
+body.theme-dark-pink {
+    --theme-bg: #2D2D2D;
+    --theme-panel: #3A3A3A;
+    --theme-text: #F5F5F5;
+    --theme-text-light: #D0D0D0;
+    --theme-accent: #FF66CC;
+    --theme-accent-soft: #FF99CC;
+    --theme-button-bg: #3A3A3A;
+    /* keep button text readable (not neon) */
+    --theme-button-text: #F5F5F5;
+    --theme-button-border: #FF66CC;
+    --theme-hover-glow: rgba(255, 102, 204, 0.3);
+    --theme-window-shadow: 4px 4px 0px 0px #FF66CC;
+    --theme-icon-stroke: #FF66CC;
+    --theme-icon-fill: #3A3A3A;
+}
+
+/* ============================================
+   THEME 2: DARK + VIOLET
+   ============================================ */
+body.theme-dark-violet {
+    --theme-bg: #2A2A3E;
+    --theme-panel: #3C3C54;
+    --theme-text: #F5F5F5;
+    --theme-text-light: #D0D0D0;
+    --theme-accent: #AA66FF;
+    --theme-accent-soft: #CC99FF;
+    --theme-button-bg: #3C3C54;
+    /* keep button text readable (not neon) */
+    --theme-button-text: #F5F5F5;
+    --theme-button-border: #AA66FF;
+    --theme-hover-glow: rgba(170, 102, 255, 0.3);
+    --theme-window-shadow: 4px 4px 0px 0px #AA66FF;
+    --theme-icon-stroke: #AA66FF;
+    --theme-icon-fill: #3C3C54;
+}
+
+/* ============================================
+   THEME 3: DARK + GREY / NEUTRAL
+   ============================================ */
+body.theme-dark-grey {
+    --theme-bg: #2E2E2E;
+    --theme-panel: #3C3C3C;
+    --theme-text: #F5F5F5;
+    --theme-text-light: #D0D0D0;
+    --theme-accent: #3399FF;
+    --theme-accent-soft: #00CCCC;
+    --theme-button-bg: #3C3C3C;
+    --theme-button-text: #F5F5F5;
+    --theme-button-border: #3399FF;
+    --theme-hover-glow: rgba(51, 153, 255, 0.2);
+    --theme-window-shadow: 4px 4px 0px 0px #3399FF;
+    --theme-icon-stroke: #3399FF;
+    --theme-icon-fill: #3C3C3C;
+}
+
+/* ============================================
+   APPLY THEMES TO DESKTOP
+   ============================================ */
+
+/* Desktop Body */
+body.theme-dark-pink,
+body.theme-dark-violet,
+body.theme-dark-grey {
+    background: var(--theme-bg);
+    color: var(--theme-text);
+}
+
+/* Desktop Wallpaper */
+body.theme-dark-pink .desktop-wallpaper,
+body.theme-dark-violet .desktop-wallpaper,
+body.theme-dark-grey .desktop-wallpaper {
+    background: var(--theme-bg);
+    background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.04) 2px, rgba(255,255,255,0.04) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.04) 2px, rgba(255,255,255,0.04) 4px);
+}
+
+/* Menu Bar */
+body.theme-dark-pink .desktop-menubar,
+body.theme-dark-violet .desktop-menubar,
+body.theme-dark-grey .desktop-menubar {
+    background: var(--theme-panel);
+    border-bottom: 2px solid var(--theme-accent);
+    color: var(--theme-text);
+    box-shadow: 0 2px 0px 0px var(--theme-accent);
+}
+
+body.theme-dark-pink .mac-menu-item,
+body.theme-dark-violet .mac-menu-item,
+body.theme-dark-grey .mac-menu-item {
+    color: var(--theme-text);
+}
+
+body.theme-dark-pink .mac-menu-item:hover,
+body.theme-dark-violet .mac-menu-item:hover,
+body.theme-dark-grey .mac-menu-item:hover {
+    background: var(--theme-hover-glow);
+}
+
+body.theme-dark-pink .mac-dropdown,
+body.theme-dark-violet .mac-dropdown,
+body.theme-dark-grey .mac-dropdown {
+    background: var(--theme-panel);
+    border: 2px solid var(--theme-accent);
+    box-shadow: 4px 4px 0px 0px var(--theme-accent);
+}
+
+body.theme-dark-pink .mac-dropdown-item,
+body.theme-dark-violet .mac-dropdown-item,
+body.theme-dark-grey .mac-dropdown-item {
+    color: var(--theme-text);
+}
+
+body.theme-dark-pink .mac-dropdown-item:hover,
+body.theme-dark-violet .mac-dropdown-item:hover,
+body.theme-dark-grey .mac-dropdown-item:hover {
+    background: var(--theme-hover-glow);
+    color: var(--theme-text);
+}
+
+/* Icon Labels */
+body.theme-dark-pink .icon-label,
+body.theme-dark-violet .icon-label,
+body.theme-dark-grey .icon-label {
+    color: var(--theme-text);
+}
+
+body.theme-dark-pink .desktop-icon:hover .icon-label,
+body.theme-dark-violet .desktop-icon:hover .icon-label,
+body.theme-dark-grey .desktop-icon:hover .icon-label {
+    background: var(--theme-hover-glow);
+}
+
+body.theme-dark-pink .desktop-icon.selected .icon-label,
+body.theme-dark-violet .desktop-icon.selected .icon-label,
+body.theme-dark-grey .desktop-icon.selected .icon-label {
+    background: var(--theme-accent);
+    color: var(--theme-bg);
+}
+
+/* ============================================
+   APPLY THEMES TO WINDOWS
+   ============================================ */
+
+body.theme-dark-pink .desktop-window,
+body.theme-dark-violet .desktop-window,
+body.theme-dark-grey .desktop-window {
+    background: var(--theme-panel);
+    border: 2px solid var(--theme-accent);
+    box-shadow: var(--theme-window-shadow);
+}
+
+body.theme-dark-pink .desktop-window.window-active,
+body.theme-dark-violet .desktop-window.window-active,
+body.theme-dark-grey .desktop-window.window-active {
+    box-shadow: 6px 6px 0px 0px var(--theme-accent), 0 0 0 2px var(--theme-accent-soft);
+}
+
+/* Title Bar */
+body.theme-dark-pink .mac-titlebar,
+body.theme-dark-violet .mac-titlebar,
+body.theme-dark-grey .mac-titlebar {
+    background: linear-gradient(to bottom, var(--theme-panel) 0%, var(--theme-panel) 50%, var(--theme-accent) 50%, var(--theme-accent) 100%);
+    background-size: 100% 2px;
+    background-color: var(--theme-panel);
+    border-bottom: 2px solid var(--theme-accent);
+}
+
+body.theme-dark-pink .mac-title,
+body.theme-dark-violet .mac-title,
+body.theme-dark-grey .mac-title {
+    color: var(--theme-text);
+    text-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+}
+
+/* Window Controls */
+body.theme-dark-pink .mac-close,
+body.theme-dark-violet .mac-close,
+body.theme-dark-grey .mac-close {
+    background: #ff0000;
+    border: 1px solid var(--theme-accent);
+}
+
+body.theme-dark-pink .mac-minimize,
+body.theme-dark-violet .mac-minimize,
+body.theme-dark-grey .mac-minimize {
+    background: #ffff00;
+    border: 1px solid var(--theme-accent);
+}
+
+body.theme-dark-pink .mac-maximize,
+body.theme-dark-violet .mac-maximize,
+body.theme-dark-grey .mac-maximize {
+    background: #00ff00;
+    border: 1px solid var(--theme-accent);
+}
+
+/* Window Content */
+body.theme-dark-pink .mac-content,
+body.theme-dark-violet .mac-content,
+body.theme-dark-grey .mac-content {
+    background: var(--theme-panel);
+    color: var(--theme-text);
+}
+
+/* ============================================
+   APPLY THEMES TO BUTTONS
+   ============================================ */
+
+body.theme-dark-pink .mac-button,
+body.theme-dark-violet .mac-button,
+body.theme-dark-grey .mac-button {
+    background: var(--theme-button-bg);
+    color: var(--theme-text);
+    border: 2px solid var(--theme-button-border);
+    box-shadow: 
+        inset -2px -2px 0px 0px rgba(0,0,0,0.3),
+        inset 2px 2px 0px 0px rgba(255,255,255,0.1);
+    transition: all 0.1s ease;
+}
+
+body.theme-dark-pink .mac-button:hover,
+body.theme-dark-violet .mac-button:hover,
+body.theme-dark-grey .mac-button:hover {
+    background: var(--theme-button-bg);
+    box-shadow: 
+        inset -2px -2px 0px 0px rgba(0,0,0,0.3),
+        inset 2px 2px 0px 0px rgba(255,255,255,0.1),
+        0 0 8px var(--theme-hover-glow);
+    color: var(--theme-text);
+}
+
+body.theme-dark-pink .mac-button:active,
+body.theme-dark-violet .mac-button:active,
+body.theme-dark-grey .mac-button:active {
+    box-shadow: 
+        inset 2px 2px 0px 0px rgba(0,0,0,0.3),
+        inset -2px -2px 0px 0px rgba(255,255,255,0.1);
+    transform: translate(1px, 1px);
+}
+
+body.theme-dark-pink .mac-button-primary,
+body.theme-dark-violet .mac-button-primary,
+body.theme-dark-grey .mac-button-primary {
+    background: var(--theme-accent);
+    color: var(--theme-text);
+    border: 2px solid var(--theme-accent);
+}
+
+body.theme-dark-pink .mac-button-primary:hover,
+body.theme-dark-violet .mac-button-primary:hover,
+body.theme-dark-grey .mac-button-primary:hover {
+    background: var(--theme-accent-soft);
+    box-shadow: 
+        inset -2px -2px 0px 0px rgba(0,0,0,0.3),
+        inset 2px 2px 0px 0px rgba(255,255,255,0.1),
+        0 0 12px var(--theme-hover-glow);
+}
+
+/* ============================================
+   APPLY THEMES TO INPUTS & SELECTS
+   ============================================ */
+
+body.theme-dark-pink .mac-input,
+body.theme-dark-violet .mac-input,
+body.theme-dark-grey .mac-input,
+body.theme-dark-pink .mac-select,
+body.theme-dark-violet .mac-select,
+body.theme-dark-grey .mac-select {
+    background: var(--theme-bg);
+    color: var(--theme-text);
+    border: 2px solid var(--theme-accent);
+    box-shadow: inset 2px 2px 0px 0px rgba(0,0,0,0.3);
+}
+
+body.theme-dark-pink .mac-input:focus,
+body.theme-dark-violet .mac-input:focus,
+body.theme-dark-grey .mac-input:focus,
+body.theme-dark-pink .mac-select:focus,
+body.theme-dark-violet .mac-select:focus,
+body.theme-dark-grey .mac-select:focus {
+    outline: 2px dotted var(--theme-accent);
+    outline-offset: 2px;
+}
+
+/* ============================================
+   APPLY THEMES TO SECTIONS & CARDS
+   ============================================ */
+
+body.theme-dark-pink .task-selection-section,
+body.theme-dark-violet .task-selection-section,
+body.theme-dark-grey .task-selection-section,
+body.theme-dark-pink .stat-card,
+body.theme-dark-violet .stat-card,
+body.theme-dark-grey .stat-card {
+    background: var(--theme-bg);
+    border: 2px solid var(--theme-accent);
+    box-shadow: inset 2px 2px 0px 0px rgba(0,0,0,0.3);
+}
+
+body.theme-dark-pink .section-title,
+body.theme-dark-violet .section-title,
+body.theme-dark-grey .section-title {
+    color: var(--theme-text);
+}
+
+body.theme-dark-pink .stat-value,
+body.theme-dark-violet .stat-value,
+body.theme-dark-grey .stat-value {
+    color: var(--theme-text);
+}
+
+body.theme-dark-pink .stat-label,
+body.theme-dark-violet .stat-label,
+body.theme-dark-grey .stat-label {
+    color: var(--theme-text-light);
+}
+
+/* ============================================
+   APPLY THEMES TO TASK LISTS
+   ============================================ */
+
+body.theme-dark-pink .task-list li,
+body.theme-dark-violet .task-list li,
+body.theme-dark-grey .task-list li {
+    background: var(--theme-bg);
+    border: 1px solid var(--theme-accent);
+    color: var(--theme-text);
+}
+
+body.theme-dark-pink .task-list li:hover,
+body.theme-dark-violet .task-list li:hover,
+body.theme-dark-grey .task-list li:hover {
+    background: var(--theme-hover-glow);
+}
+
+/* ============================================
+   APPLY THEMES TO PROGRESS BARS
+   ============================================ */
+
+body.theme-dark-pink .progress-container,
+body.theme-dark-violet .progress-container,
+body.theme-dark-grey .progress-container {
+    background: var(--theme-bg);
+    border: 2px solid var(--theme-accent);
+    box-shadow: inset 2px 2px 0px 0px rgba(0,0,0,0.3);
+}
+
+body.theme-dark-pink .progress-bar,
+body.theme-dark-violet .progress-bar,
+body.theme-dark-grey .progress-bar {
+    background: var(--theme-accent);
+}
+
+/* ============================================
+   APPLY THEMES TO ICONS (SVG)
+   ============================================ */
+
+body.theme-dark-pink .icon-graphic svg,
+body.theme-dark-violet .icon-graphic svg,
+body.theme-dark-grey .icon-graphic svg {
+    filter: none;
+}
+
+body.theme-dark-pink .icon-graphic svg circle,
+body.theme-dark-pink .icon-graphic svg rect,
+body.theme-dark-pink .icon-graphic svg line,
+body.theme-dark-pink .icon-graphic svg path {
+    stroke: var(--theme-icon-stroke);
+    fill: var(--theme-icon-fill);
+}
+
+body.theme-dark-violet .icon-graphic svg circle,
+body.theme-dark-violet .icon-graphic svg rect,
+body.theme-dark-violet .icon-graphic svg line,
+body.theme-dark-violet .icon-graphic svg path {
+    stroke: var(--theme-icon-stroke);
+    fill: var(--theme-icon-fill);
+}
+
+body.theme-dark-grey .icon-graphic svg circle,
+body.theme-dark-grey .icon-graphic svg rect,
+body.theme-dark-grey .icon-graphic svg line,
+body.theme-dark-grey .icon-graphic svg path {
+    stroke: var(--theme-icon-stroke);
+    fill: var(--theme-icon-fill);
+}
+
+/* Selected icon in dark themes */
+body.theme-dark-pink .desktop-icon.selected .icon-graphic svg,
+body.theme-dark-violet .desktop-icon.selected .icon-graphic svg,
+body.theme-dark-grey .desktop-icon.selected .icon-graphic svg {
+    filter: brightness(1.5);
+}
+
+/* ============================================
+   NAVIGATION & LINKS
+   ============================================ */
+
+body.theme-dark-pink .nav-link,
+body.theme-dark-violet .nav-link,
+body.theme-dark-grey .nav-link {
+    color: var(--theme-text);
+}
+
+body.theme-dark-pink .nav-link:hover,
+body.theme-dark-violet .nav-link:hover,
+body.theme-dark-grey .nav-link:hover {
+    color: var(--theme-text);
+    text-shadow: 0 0 4px var(--theme-hover-glow);
+}
+
+body.theme-dark-pink .nav-separator,
+body.theme-dark-violet .nav-separator,
+body.theme-dark-grey .nav-separator {
+    color: var(--theme-text-light);
+}
+
+/* ============================================
+   EMPTY STATES & MESSAGES
+   ============================================ */
+
+body.theme-dark-pink .empty-state,
+body.theme-dark-violet .empty-state,
+body.theme-dark-grey .empty-state {
+    color: var(--theme-text-light);
+}
+
+/* ============================================
+   READABILITY TWEAKS (requested)
+   - Pomodoro "Select Task:" label
+   - Daily Summary date text
+   - Task text in Tasks app
+   ============================================ */
+
+body.theme-dark-pink .task-select-label,
+body.theme-dark-violet .task-select-label,
+body.theme-dark-grey .task-select-label,
+body.theme-dark-pink .daily-date,
+body.theme-dark-violet .daily-date,
+body.theme-dark-grey .daily-date,
+body.theme-dark-pink .task-text,
+body.theme-dark-violet .task-text,
+body.theme-dark-grey .task-text {
+    color: #F5F5F5;
+}
+
+/* ============================================
+   CONTRIBUTION CALENDAR
+   ============================================ */
+
+body.theme-dark-pink .contribution-square,
+body.theme-dark-violet .contribution-square,
+body.theme-dark-grey .contribution-square {
+    border: 1px solid var(--theme-accent);
+}
+
+body.theme-dark-pink .contribution-legend,
+body.theme-dark-violet .contribution-legend,
+body.theme-dark-grey .contribution-legend {
+    color: var(--theme-text-light);
+}
+
+/* ============================================
+   HISTORY & SUMMARY ITEMS
+   ============================================ */
+
+body.theme-dark-pink .history-item,
+body.theme-dark-violet .history-item,
+body.theme-dark-grey .history-item,
+body.theme-dark-pink .daily-item,
+body.theme-dark-violet .daily-item,
+body.theme-dark-grey .daily-item {
+    background: var(--theme-bg);
+    border: 1px solid var(--theme-accent);
+    color: var(--theme-text);
+}
+
+body.theme-dark-pink .history-item:hover,
+body.theme-dark-violet .history-item:hover,
+body.theme-dark-grey .history-item:hover,
+body.theme-dark-pink .daily-item:hover,
+body.theme-dark-violet .daily-item:hover,
+body.theme-dark-grey .daily-item:hover {
+    background: var(--theme-hover-glow);
+}
+
