@@ -144,7 +144,7 @@ export class Auth {
                 error.message.includes('NetworkError') ||
                 error.message.includes('Load failed')
             )) {
-                errorEl.textContent = 'Connection error. Make sure backend is running on http://localhost:5000 and CORS is enabled. If using Cursor preview, try opening in a regular browser.';
+                errorEl.textContent = 'Connection error. Make sure backend is running on http://localhost:5000 and CORS is enabled.';
             } else if (error.message && error.message.includes('Connection error')) {
                 errorEl.textContent = error.message;
             } else {
@@ -268,7 +268,7 @@ export class Auth {
                 error.message.includes('NetworkError') ||
                 error.message.includes('Load failed')
             )) {
-                errorEl.textContent = 'Connection error. Make sure backend is running on http://localhost:5000. If using Cursor preview, try opening in a regular browser (Edge/Chrome).';
+                errorEl.textContent = 'Connection error. Make sure backend is running on http://localhost:5000 and CORS is enabled.';
             } else if (error.message && error.message.includes('Connection error')) {
                 errorEl.textContent = error.message;
             } else {

@@ -165,40 +165,40 @@ The app runs entirely in the browser with a retro Macintosh aesthetic, featuring
 
 ```
 todo_app/
-├── index.html                    # Entry point - redirects to landing/auth/desktop
-├── frontend/
-│   ├── desktop.html              # Main desktop environment
-│   ├── apps/
-│   │   ├── landing.html         # Landing page with logo and auth buttons
-│   │   ├── auth.html            # Authentication window
-│   │   ├── pomodoro.html        # Pomodoro timer (standalone)
-│   │   ├── todo.html            # Task management (standalone)
-│   │   └── dashboard.html       # Analytics dashboard (standalone)
-│   ├── css/
-│   │   ├── desktop.css          # Desktop wallpaper, menu bar, icons
-│   │   ├── window.css           # Window frames, title bars, controls
-│   │   ├── cursor.css           # Custom Macintosh cursor
-│   │   └── apps.css             # App-specific styling
-│   ├── js/
-│   │   ├── desktop.js           # Desktop environment logic
-│   │   ├── windowManager.js     # Window creation, dragging, focus, z-index
-│   │   ├── windowApps.js        # App content templates and initialization
-│   │   ├── auth.js              # Authentication logic
-│   │   ├── todo.js              # Task management
-│   │   ├── pomodoro.js          # Pomodoro timer logic
-│   │   ├── dashboard.js         # Analytics and statistics
-│   │   ├── trash.js             # Trash management
-│   │   ├── api.js               # Backend API communication
-│   │   ├── config.js            # Centralized configuration
-│   │   └── utils.js             # Utility functions
-│   └── assets/
-│       ├── cursors/             # Custom cursor images
-│       └── icons/               # App icons
-└── backend/
-    ├── app.py                   # Flask application with auth and task routes
-    ├── requirements.txt         # Python dependencies
-    ├── .env.example             # Example environment variables
-    └── tasks.db                 # SQLite database (auto-created)
+├── index.html                     # Entry point (redirects to landing page)
+├── frontend/                      # Modular frontend (static files)
+│   ├── desktop.html               # Desktop environment shell
+│   ├── apps/                      # Standalone app pages (used by the desktop)
+│   │   ├── landing.html           # Landing page
+│   │   ├── auth.html              # Authentication
+│   │   ├── pomodoro.html          # Pomodoro
+│   │   ├── todo.html              # Tasks
+│   │   └── dashboard.html         # Analytics dashboard
+│   ├── css/                       # Styling (split by concern)
+│   │   ├── desktop.css
+│   │   ├── window.css
+│   │   ├── cursor.css
+│   │   └── apps.css
+│   ├── js/                        # ES modules (split by feature)
+│   │   ├── desktop.js
+│   │   ├── windowManager.js
+│   │   ├── windowApps.js
+│   │   ├── auth.js
+│   │   ├── api.js
+│   │   ├── config.js
+│   │   ├── utils.js
+│   │   ├── pomodoro.js
+│   │   ├── todo.js
+│   │   ├── dashboard.js
+│   │   ├── trash.js
+│   │   └── offline.js
+│   ├── assets/
+│   │   └── cursors/               # Custom cursor images
+│   └── sw.js                      # Service worker
+└── backend/                        # Flask API
+    ├── app.py
+    ├── requirements.txt
+    └── tasks.db                    # SQLite database (auto-created)
 ```
 
 ## Limitations
