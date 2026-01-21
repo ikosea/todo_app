@@ -201,42 +201,6 @@ todo_app/
     └── tasks.db                    # SQLite database (auto-created)
 ```
 
-## Limitations
-
-- **Browser Compatibility**: Requires modern browsers (Chrome, Firefox, Edge, Safari). Internet Explorer is not supported.
-- **Local Development Only**: Currently configured for local development. Production deployment requires additional configuration (CORS origins, environment variables, database setup).
-- **Single User Database**: SQLite database is suitable for single-user or small-scale use. For multi-user production, consider PostgreSQL or MySQL.
-- **No Real-time Collaboration**: Tasks and sessions are user-specific. No real-time collaboration features.
-- **Offline Functionality**: Limited offline support. Service worker caches files, but full offline functionality is not implemented.
-- **Window Maximize**: Green button (maximize) is not yet implemented.
-- **File Menu**: Export/Import data features are placeholders and not fully implemented.
-- **Rate Limiting**: Rate limiting uses in-memory storage. For production, use Redis or another persistent storage solution.
-- **CORS Configuration**: Must be configured for production domains. Default allows only localhost.
-- **No Email Verification**: User registration does not include email verification.
-- **No Password Reset**: Password reset functionality is not implemented.
-
-## Future Improvements
-
-- **Enhanced Dashboard**: Add more analytics, charts, and insights into productivity patterns
-- **Task Categories**: Organize tasks by categories or projects
-- **Task Priorities**: Add priority levels to tasks
-- **Task Due Dates**: Set deadlines and reminders for tasks
-- **Pomodoro Customization**: Allow users to customize work/break durations
-- **Sound Customization**: Allow users to choose notification sounds
-- **Theme Customization**: Additional themes beyond Macintosh System 7/8
-- **Keyboard Shortcuts**: Add keyboard shortcuts for common actions
-- **Window Maximize**: Implement full window maximize functionality
-- **Data Export/Import**: Complete implementation of data export and import features
-- **Offline Mode**: Full offline functionality with automatic sync when online
-- **Mobile Responsive**: Adapt the desktop environment for mobile devices
-- **Dark Mode**: Add a dark mode option
-- **Task Templates**: Pre-defined task templates for common workflows
-- **Session Statistics**: More detailed statistics on focus patterns and productivity trends
-- **Multi-language Support**: Internationalization for multiple languages
-- **Accessibility**: Enhanced keyboard navigation and screen reader support
-- **PWA Features**: Make the app installable as a Progressive Web App
-- **Backup and Sync**: Cloud backup and sync across devices
-
 ## License
 
 This project is for educational/personal use.
