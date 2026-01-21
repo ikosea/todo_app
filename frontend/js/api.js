@@ -92,7 +92,7 @@ async function apiRequest(endpoint, options = {}) {
                 error.message.includes('Failed to fetch') ||
                 error.message.includes('NetworkError') ||
                 error.message.includes('Load failed')) {
-                throw new Error('Connection error. Make sure backend is running on http://localhost:5000 and CORS is enabled');
+                throw new Error('Connection error. Make sure backend is running on http://127.0.0.1:5000 and CORS is enabled');
             }
         }
         // Re-throw other errors as-is

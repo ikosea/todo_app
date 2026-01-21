@@ -6,8 +6,10 @@
 export const CONFIG = {
     // API Configuration
     API: {
-        // Use environment variable or fallback to localhost for development
-        BASE_URL: import.meta.env?.VITE_API_URL || 'http://localhost:5000/api',
+        // Use environment variable or fallback for development.
+        // On Windows, `localhost` can resolve to IPv6 (::1) while the Flask dev server
+        // is often bound to IPv4 only, causing connection refused. Default to 127.0.0.1.
+        BASE_URL: import.meta.env?.VITE_API_URL || 'http://127.0.0.1:5000/api',
         ENDPOINTS: {
             TASKS: '/tasks',
             AUTH: {
@@ -54,7 +56,9 @@ export const CONFIG = {
         DASHBOARD: 'dashboard',
         AUTH: 'auth',
         FOLDER: 'folder',
-        TRASH: 'trash'
+        TRASH: 'trash',
+        AMBIENT: 'ambient',
+        MEDITATION: 'meditation'
     },
 
     // Window Titles
@@ -65,7 +69,8 @@ export const CONFIG = {
         'dashboard': 'Productivity Dashboard',
         'auth': 'Authentication',
         'folder': 'Folder',
-        'trash': 'Trash'
+        'trash': 'Trash',
+        'ambient': 'Ambient Noise'
     },
 
     // Cursor Types

@@ -93,11 +93,16 @@ export class Auth {
         }
 
         try {
-            const response = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.AUTH.LOGIN}`, {
+            const loginUrl = `${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.AUTH.LOGIN}`;
+            console.log('Attempting login to:', loginUrl);
+            
+            const response = await fetch(loginUrl, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({username, password})
             });
+
+            console.log('Login response status:', response.status, response.statusText);
 
             const contentType = response.headers.get('content-type');
             let data = null;
@@ -106,33 +111,46 @@ export class Auth {
                 try {
                     const text = await response.text();
                     data = text ? JSON.parse(text) : null;
+                    console.log('Login response data:', data);
                 } catch (parseError) {
                     console.error('JSON parse error:', parseError);
                     errorEl.textContent = 'Invalid response from server';
                     errorEl.classList.add('show');
                     return;
                 }
+            } else {
+                const text = await response.text();
+                console.error('Non-JSON response:', text);
+                errorEl.textContent = `Server returned non-JSON response (${response.status})`;
+                errorEl.classList.add('show');
+                return;
             }
 
             if (response.ok) {
                 if (data && data.token) {
+                    console.log('Login successful, storing token');
                     localStorage.setItem(CONFIG.STORAGE.AUTH_TOKEN, data.token);
                     localStorage.setItem(CONFIG.STORAGE.CURRENT_USER, JSON.stringify(data.user));
                     // Check if we're in desktop mode (window element exists) or standalone auth page
                     const isInDesktop = windowElement && windowElement.closest('.desktop-window');
                     if (isInDesktop) {
                         // In desktop window, reload to refresh auth state
+                        console.log('Reloading desktop...');
                         window.location.reload();
                     } else {
                         // Standalone auth page, redirect to desktop
+                        console.log('Redirecting to desktop...');
                         window.location.href = '../desktop.html';
                     }
                 } else {
-                    errorEl.textContent = 'Invalid response from server';
+                    console.error('No token in response:', data);
+                    errorEl.textContent = 'Invalid response from server: No token received';
                     errorEl.classList.add('show');
                 }
             } else {
-                errorEl.textContent = (data && data.error) ? data.error : `Login failed (${response.status})`;
+                const errorMsg = (data && data.error) ? data.error : `Login failed (${response.status})`;
+                console.error('Login failed:', errorMsg);
+                errorEl.textContent = errorMsg;
                 errorEl.classList.add('show');
             }
         } catch (error) {
@@ -144,7 +162,7 @@ export class Auth {
                 error.message.includes('NetworkError') ||
                 error.message.includes('Load failed')
             )) {
-                errorEl.textContent = 'Connection error. Make sure backend is running on http://localhost:5000 and CORS is enabled.';
+                errorEl.textContent = 'Connection error. Make sure backend is running on http://127.0.0.1:5000 and CORS is enabled.';
             } else if (error.message && error.message.includes('Connection error')) {
                 errorEl.textContent = error.message;
             } else {
@@ -268,7 +286,7 @@ export class Auth {
                 error.message.includes('NetworkError') ||
                 error.message.includes('Load failed')
             )) {
-                errorEl.textContent = 'Connection error. Make sure backend is running on http://localhost:5000 and CORS is enabled.';
+                errorEl.textContent = 'Connection error. Make sure backend is running on http://127.0.0.1:5000 and CORS is enabled.';
             } else if (error.message && error.message.includes('Connection error')) {
                 errorEl.textContent = error.message;
             } else {

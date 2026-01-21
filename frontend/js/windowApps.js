@@ -8,7 +8,9 @@ import { Todo } from './todo.js';
 import { Pomodoro } from './pomodoro.js';
 import { Dashboard } from './dashboard.js';
 import { Trash } from './trash.js';
-import { CONFIG } from './config.js';
+import { Ambient } from './ambient.js?v=9';
+import { Folder } from './folder.js';
+import { CONFIG } from './config.js?v=9';
 
 export class WindowApps {
     /**
@@ -28,6 +30,10 @@ export class WindowApps {
                 return this.getAuthContent();
             case 'trash':
                 return this.getTrashContent();
+            case 'ambient':
+                return this.getAmbientContent();
+            case 'folder':
+                return this.getFolderContent();
             default:
                 return '<div class="mac-content"><p>Unknown app</p></div>';
         }
@@ -292,6 +298,16 @@ export class WindowApps {
                     await pomodoro.init();
                     console.log('Pomodoro app initialized');
                     break;
+                case 'ambient':
+                    console.log('Initializing Ambient app...');
+                    Ambient.init(windowElement);
+                    console.log('Ambient app initialized');
+                    break;
+                case 'folder':
+                    console.log('Initializing Folder app...');
+                    await Folder.init(windowElement);
+                    console.log('Folder app initialized');
+                    break;
                 case 'todo':
                     console.log('Initializing Todo app...');
                     await Todo.init(windowElement);
@@ -312,6 +328,11 @@ export class WindowApps {
                     await Trash.init(windowElement);
                     console.log('Trash app initialized');
                     break;
+                case 'meditation':
+                    console.log('Initializing Meditation app...');
+                    await Meditation.init(windowElement);
+                    console.log('Meditation app initialized');
+                    break;
                 default:
                     console.warn('Unknown app type:', appType);
             }
@@ -319,6 +340,100 @@ export class WindowApps {
             console.error(`Error initializing ${appType} app:`, error);
             console.error('Error stack:', error.stack);
         }
+    }
+
+    /**
+     * Get Ambient Noise app content
+     */
+    static getAmbientContent() {
+        return `
+            <div class="mac-content">
+                <h2 class="section-title" style="margin-top: 0;">Ambient Noise</h2>
+
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="form-label" for="ambient-type">Sound</label>
+                    <select id="ambient-type" class="mac-select">
+                        <option value="white">White Noise</option>
+                        <option value="rain">Rain</option>
+                        <option value="waves">Waves</option>
+                        <option value="coffee">Coffee Shop</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="form-label" for="ambient-volume">Volume</label>
+                    <input id="ambient-volume" type="range" min="0" max="100" value="35" />
+                </div>
+
+                <div style="display:flex; gap: 10px; align-items:center; margin-top: 10px;">
+                    <button id="ambient-play" class="mac-button mac-button-primary">Play</button>
+                    <div id="ambient-status" style="font-family: 'Geneva', monospace; font-size: 12px;">Paused</div>
+                </div>
+
+                <div style="margin-top: 12px; font-family: 'Geneva', monospace; font-size: 11px; color: #808080;">
+                    Procedural audio (no external files). Minimize the window to keep it running while you work.
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Get Meditation app content
+     */
+    static getMeditationContent() {
+        return `
+            <div class="mac-content">
+                <h2 class="section-title" style="margin-top: 0;">Meditation & Breathing</h2>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" for="meditation-type">Breathing Technique</label>
+                    <select id="meditation-type" class="mac-select">
+                        <option value="box">Box Breathing (4-4-4-4)</option>
+                        <option value="4-7-8">4-7-8 Breathing</option>
+                        <option value="deep">Deep Breathing (6-6)</option>
+                        <option value="equal">Equal Breathing (4-4)</option>
+                    </select>
+                </div>
+
+                <!-- Breathing Visual -->
+                <div style="display: flex; flex-direction: column; align-items: center; margin: 20px 0;">
+                    <svg width="120" height="120" viewBox="0 0 120 120" style="margin-bottom: 12px;">
+                        <circle cx="60" cy="60" r="50" fill="none" stroke="#c0c0c0" stroke-width="4"/>
+                        <circle id="breathing-progress" cx="60" cy="60" r="45" fill="none" stroke="#000000" stroke-width="6" 
+                                stroke-dasharray="283" stroke-dashoffset="283" transform="rotate(-90 60 60)" 
+                                style="transition: stroke-dashoffset 0.3s ease;"/>
+                    </svg>
+                    <div id="breathing-instruction" style="font-family: 'Geneva', monospace; font-size: 18px; font-weight: bold; margin-bottom: 8px;">Ready</div>
+                    <div id="breathing-timer" style="font-family: 'Geneva', monospace; font-size: 32px; font-weight: bold;">0</div>
+                    <div id="cycle-count" style="font-family: 'Geneva', monospace; font-size: 12px; color: #808080; margin-top: 8px;">Cycles: 0</div>
+                </div>
+
+                <!-- Controls -->
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                    <button id="meditation-start" class="mac-button mac-button-primary">Start</button>
+                    <button id="meditation-pause" class="mac-button" style="display: none;">Pause</button>
+                    <button id="meditation-reset" class="mac-button">Reset</button>
+                </div>
+
+                <div style="margin-top: 16px; font-family: 'Geneva', monospace; font-size: 11px; color: #808080; text-align: center;">
+                    Follow the visual guide and timer. Breathe naturally and relax.
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Get Folder app content
+     */
+    static getFolderContent() {
+        return `
+            <div class="mac-content">
+                <h2 class="section-title">Folder</h2>
+                <div class="empty-state" style="display:block;">
+                    <p>Loading...</p>
+                </div>
+            </div>
+        `;
     }
 
     /**

@@ -17,16 +17,22 @@ app = Flask(__name__)
 
 # Get configuration from environment variables with fallbacks
 SECRET_KEY = os.getenv('SECRET_KEY', os.urandom(32).hex())
-ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:8000,http://127.0.0.1:8000').split(',')
+# Comma-separated list of allowed frontend origins.
+# In local dev, allowing "*" avoids common Windows host/IP mismatches (localhost vs 127.0.0.1 vs LAN IP).
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '*').split(',')
 
 app.config['SECRET_KEY'] = SECRET_KEY
 
-# Configure CORS with specific origins
-CORS(app, 
-     origins=ALLOWED_ORIGINS,
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
-     allow_headers=["Content-Type", "Authorization"],
-     supports_credentials=True)
+# Configure CORS
+_allow_all_origins = any(o.strip() == '*' for o in ALLOWED_ORIGINS)
+CORS(
+    app,
+    origins="*" if _allow_all_origins else [o.strip() for o in ALLOWED_ORIGINS if o.strip()],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    # We don't use cookies for auth; disabling credentials avoids invalid "*" + credentials combinations.
+    supports_credentials=False,
+)
 
 # Configure rate limiting
 limiter = Limiter(
@@ -39,12 +45,31 @@ limiter = Limiter(
 # Ensure CORS headers are added to all responses (flask-cors handles this, but keep for compatibility)
 @app.after_request
 def after_request(response):
-    # CORS is handled by flask-cors, but ensure headers are set for allowed origins
+    # CORS is mostly handled by flask-cors, but ensure preflight responses include
+    # the headers browsers require (especially for Authorization + JSON POSTs).
     origin = request.headers.get('Origin')
-    if origin and origin in ALLOWED_ORIGINS:
-        if 'Access-Control-Allow-Origin' not in response.headers:
-            response.headers.add('Access-Control-Allow-Origin', origin)
-            response.headers.add('Access-Control-Allow-Credentials', 'true')
+
+    # Allow origin
+    if _allow_all_origins:
+        response.headers.setdefault('Access-Control-Allow-Origin', '*')
+    elif origin and origin in [o.strip() for o in ALLOWED_ORIGINS]:
+        response.headers.setdefault('Access-Control-Allow-Origin', origin)
+
+    # Handle OPTIONS preflight
+    if request.method == 'OPTIONS':
+        # Allow methods
+        response.headers.setdefault('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+
+        # Allow headers (either echo requested headers, or default to the ones we need)
+        requested = request.headers.get('Access-Control-Request-Headers')
+        if requested:
+            response.headers.setdefault('Access-Control-Allow-Headers', requested)
+        else:
+            response.headers.setdefault('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+        # Cache preflight for a day (dev friendly)
+        response.headers.setdefault('Access-Control-Max-Age', '86400')
+
     return response
 
 # Global error handler to ensure CORS headers on errors
@@ -56,9 +81,10 @@ def handle_error(e):
     print(traceback.format_exc())
     response = make_response(jsonify({"error": "Internal server error"}), 500)
     origin = request.headers.get('Origin')
-    if origin and origin in ALLOWED_ORIGINS:
+    if _allow_all_origins:
+        response.headers.add('Access-Control-Allow-Origin', '*')
+    elif origin and origin in [o.strip() for o in ALLOWED_ORIGINS]:
         response.headers.add('Access-Control-Allow-Origin', origin)
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
 # Authentication middleware
@@ -73,12 +99,14 @@ def verify_token(f):
                 token = auth_header.split(' ')[1]  # Bearer <token>
             except:
                 response = make_response(jsonify({"error": "Invalid token format"}), 401)
-                response.headers.add('Access-Control-Allow-Origin', '*')
+                if _allow_all_origins:
+                    response.headers.add('Access-Control-Allow-Origin', '*')
                 return response
         
         if not token:
             response = make_response(jsonify({"error": "Authentication required"}), 401)
-            response.headers.add('Access-Control-Allow-Origin', '*')
+            if _allow_all_origins:
+                response.headers.add('Access-Control-Allow-Origin', '*')
             return response
         
         try:
@@ -87,11 +115,13 @@ def verify_token(f):
             request.current_username = data['username']
         except jwt.ExpiredSignatureError:
             response = make_response(jsonify({"error": "Token expired"}), 401)
-            response.headers.add('Access-Control-Allow-Origin', '*')
+            if _allow_all_origins:
+                response.headers.add('Access-Control-Allow-Origin', '*')
             return response
         except jwt.InvalidTokenError:
             response = make_response(jsonify({"error": "Invalid token"}), 401)
-            response.headers.add('Access-Control-Allow-Origin', '*')
+            if _allow_all_origins:
+                response.headers.add('Access-Control-Allow-Origin', '*')
             return response
         
         return f(*args, **kwargs)
@@ -287,11 +317,15 @@ def login():
         'exp': datetime.utcnow() + timedelta(days=7)
     }, app.config['SECRET_KEY'], algorithm='HS256')
     
+    # Ensure token is a string (PyJWT 2.x returns string, but be explicit)
+    if isinstance(token, bytes):
+        token = token.decode('utf-8')
+    
     conn.close()
     
     return jsonify({
         "message": "Login successful",
-        "token": token,
+        "token": str(token),
         "user": {
             "id": user["id"],
             "username": user["username"],
@@ -405,4 +439,6 @@ def increment_pomodoro(task_id):
     return jsonify(dict(updated_task)), 200
 
 if __name__ == "__main__":
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    # Bind to all IPv4 interfaces to avoid Windows localhost/IPv6 resolution issues.
+    # Access it via http://127.0.0.1:5000
+    app.run(debug=True, host='0.0.0.0', port=5000)
